@@ -2,63 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  /* Hide scrollbar for IE, Edge and Firefox */
-  .no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
-
-  .glass-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-  }
-
-  .glass-card-dark {
-    background: rgba(26, 17, 56, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  
-  .gradient-purple-hero {
-    background: linear-gradient(135deg, #4f2bbd 0%, #7c3aed 50%, #6366f1 100%);
-  }
-
-  .gradient-card-visa {
-    background: linear-gradient(135deg, #5b21b6 0%, #3b0764 50%, #1e1b4b 100%);
-  }
-
-  .gradient-card-orange {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-  }
-
-  .gradient-card-green {
-    background: linear-gradient(135deg, #10b981 0%, #047857 100%);
-  }
+html, body {
+  overscroll-behavior: none;
+  background-color: #000000;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Plus Jakarta Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.overflow-y-auto {
+  overscroll-behavior-y: contain;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.4);
-  border-radius: 9999px;
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(107, 114, 128, 0.6);
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 24px);
+}
+
+.glass-bottom-bar {
+  background: rgba(28, 28, 30, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }

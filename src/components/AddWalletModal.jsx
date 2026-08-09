@@ -1,127 +1,55 @@
 import React, { useState } from 'react';
-import { useFinancials } from '../context/FinancialContext';
-import { X, Wallet, CreditCard, DollarSign } from 'lucide-react';
+import { useFinancials, vibrate } from '../context/FinancialContext';
 
 export const AddWalletModal = ({ isOpen, onClose }) => {
   const { addWallet } = useFinancials();
-
   const [name, setName] = useState('');
-  const [balance, setBalance] = useState('');
-  const [type, setType] = useState('card');
-  const [accountNumber, setAccountNumber] = useState('');
+  const [currency, setCurrency] = useState('USD');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!name) {
-      alert('Please enter a wallet name.');
-      return;
-    }
-
-    addWallet({
-      name,
-      balance: parseFloat(balance || '0'),
-      type,
-      accountNumber: accountNumber ? `•••• ${accountNumber}` : 'Account',
-    });
-
+  const handleSubmit = () => {
+    vibrate();
+    if (!name) return;
+    addWallet({ name, currency, iconString: 'Wallet' });
     setName('');
-    setBalance('');
-    setType('card');
-    setAccountNumber('');
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white dark:bg-[#180e3c] w-full max-w-sm rounded-3xl p-6 border border-slate-200 dark:border-purple-800/40 shadow-2xl space-y-4">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={onClose} />
+      <div className="bg-[#1C1C1E] w-full rounded-t-[2.5rem] p-6 pb-safe pointer-events-auto animate-spring-up border-t border-gray-800 text-white space-y-4">
+        <h2 className="text-xl font-bold text-center">Add New Account</h2>
         
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300">
-              <Wallet className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
-                Create New Wallet
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-purple-300/60">
-                Add bank, cash, or credit account
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-purple-900/40 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        <input 
+          type="text" 
+          value={name} 
+          onChange={e => setName(e.target.value)} 
+          placeholder="Wallet Name (e.g. Savings, Chase Card)" 
+          className="w-full bg-[#2C2C2E] text-white rounded-2xl px-4 py-3.5 font-bold border border-gray-700 outline-none text-sm" 
+          autoFocus
+        />
 
-        <form onSubmit={handleSubmit} className="space-y-3.5">
-          
-          <div>
-            <label className="text-xs font-semibold text-slate-600 dark:text-purple-200 mb-1 block">Account Name</label>
-            <input
-              type="text"
-              placeholder="e.g. Travel Card, Emergency Savings"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-[#1f1449] border border-slate-200 dark:border-purple-800/40 text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
-          </div>
+        <select 
+          value={currency} 
+          onChange={e => setCurrency(e.target.value)} 
+          className="w-full bg-[#2C2C2E] text-white rounded-2xl px-4 py-3.5 font-bold border border-gray-700 outline-none text-sm"
+        >
+          <option value="USD">USD ($)</option>
+          <option value="EUR">EUR (€)</option>
+          <option value="GBP">GBP (£)</option>
+          <option value="JPY">JPY (¥)</option>
+          <option value="INR">INR (₹)</option>
+        </select>
 
-          <div>
-            <label className="text-xs font-semibold text-slate-600 dark:text-purple-200 mb-1 block">Initial Balance ($)</label>
-            <input
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              value={balance}
-              onChange={(e) => setBalance(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-[#1f1449] border border-slate-200 dark:border-purple-800/40 text-xs font-extrabold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-xs font-semibold text-slate-600 dark:text-purple-200 mb-1 block">Account Type</label>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-2xl bg-slate-50 dark:bg-[#1f1449] border border-slate-200 dark:border-purple-800/40 text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="card">Credit / Debit Card</option>
-                <option value="cash">Physical Cash</option>
-                <option value="savings">Savings Account</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-slate-600 dark:text-purple-200 mb-1 block">Last 4 Digits</label>
-              <input
-                type="text"
-                maxLength={4}
-                placeholder="1234"
-                value={accountNumber}
-                onChange={(e) => setAccountNumber(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-2xl bg-slate-50 dark:bg-[#1f1449] border border-slate-200 dark:border-purple-800/40 text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs shadow-purple-glow transition-all active:scale-98 mt-2"
-          >
-            Create Wallet
-          </button>
-
-        </form>
-
+        <button 
+          onClick={handleSubmit} 
+          disabled={!name} 
+          className="w-full py-3.5 rounded-2xl font-bold text-white bg-emerald-500 hover:bg-emerald-400 active:scale-98 transition-all disabled:opacity-50 text-sm"
+        >
+          Create Wallet
+        </button>
       </div>
     </div>
   );
