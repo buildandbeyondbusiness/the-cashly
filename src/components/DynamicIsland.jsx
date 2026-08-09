@@ -28,13 +28,13 @@ export const DynamicIsland = ({ onOpenQuickLog }) => {
   };
 
   return (
-    <div className="absolute top-[12px] left-1/2 -translate-x-1/2 z-50 pointer-events-auto transition-all duration-500 ease-out">
+    <div className="absolute top-[22px] left-1/2 -translate-x-1/2 z-50 pointer-events-auto transition-all duration-500 ease-out">
       
       {/* 1. Live Event State: Liquid Blob Drops Down Below Status Bar */}
       {eventNotification ? (
         <div 
           onClick={toggleExpand}
-          className="w-[325px] h-[68px] rounded-[30px] bg-black/95 text-white border border-emerald-500/50 shadow-[0_14px_35px_rgba(0,0,0,0.9)] flex items-center justify-between px-4 cursor-pointer transform translate-y-7 transition-all duration-500 cubic-bezier(0.175, 0.885, 0.32, 1.2) backdrop-blur-2xl ring-2 ring-emerald-500/30"
+          className="w-[325px] h-[68px] rounded-[30px] bg-black/95 text-white border border-emerald-500/50 shadow-[0_14px_35px_rgba(0,0,0,0.9)] flex items-center justify-between px-4 cursor-pointer transform translate-y-9 transition-all duration-500 cubic-bezier(0.175, 0.885, 0.32, 1.2) backdrop-blur-2xl ring-2 ring-emerald-500/30"
         >
           <div className="flex items-center gap-3">
             <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
@@ -65,7 +65,7 @@ export const DynamicIsland = ({ onOpenQuickLog }) => {
         /* 2. Expanded State: Liquid Blob Drops Down Smoothly */
         <div 
           onClick={toggleExpand}
-          className="w-[320px] h-[70px] rounded-[32px] bg-black/95 text-white border border-white/20 shadow-[0_14px_35px_rgba(0,0,0,0.95)] flex items-center justify-between px-4 cursor-pointer transform translate-y-7 transition-all duration-400 cubic-bezier(0.175, 0.885, 0.32, 1.2) backdrop-blur-2xl ring-1 ring-white/10"
+          className="w-[320px] h-[70px] rounded-[32px] bg-black/95 text-white border border-white/20 shadow-[0_14px_35px_rgba(0,0,0,0.95)] flex items-center justify-between px-4 cursor-pointer transform translate-y-9 transition-all duration-400 cubic-bezier(0.175, 0.885, 0.32, 1.2) backdrop-blur-2xl ring-1 ring-white/10"
         >
           {/* Active Wallet Info */}
           <div className="flex items-center gap-2.5">
@@ -107,7 +107,7 @@ export const DynamicIsland = ({ onOpenQuickLog }) => {
 
       ) : (
 
-        /* 3. Idle State: Clean Compact Notch Pill (120px x 32px) */
+        /* 3. Idle State: Clean Compact Notch Pill (120px x 32px) positioned lower at top-[22px] */
         <div 
           onClick={toggleExpand}
           className="w-[120px] h-[32px] rounded-[18px] bg-black border border-white/10 shadow-md flex items-center justify-between px-3 cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300 group"
