@@ -64,9 +64,16 @@ const safeSet = (key, value) => {
   } catch (e) {}
 };
 
-export const vibrate = () => {
+// Micro-Haptic Tactile Engine Simulation (iOS Taptic Engine)
+export const vibrate = (type = 'light') => {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
-    navigator.vibrate(30);
+    try {
+      if (type === 'light') navigator.vibrate(10);
+      else if (type === 'medium') navigator.vibrate(22);
+      else if (type === 'success') navigator.vibrate([15, 30, 20]);
+      else if (type === 'warning') navigator.vibrate([40, 50, 40]);
+      else navigator.vibrate(15);
+    } catch (e) {}
   }
 };
 
@@ -126,7 +133,6 @@ export const FinancialProvider = ({ children }) => {
   useEffect(() => {
     if (!user || !db) return;
 
-    // Listen to single consolidated user doc to save 99% of Firebase Reads!
     const userDocRef = doc(db, 'users', user.uid);
     const unsub = onSnapshot(userDocRef, (snap) => {
       if (snap.exists()) {
@@ -158,7 +164,6 @@ export const FinancialProvider = ({ children }) => {
           bills: updatedState.bills || bills,
           lastUpdated: new Date().toISOString()
         }, { merge: true });
-        console.log("Efficient Quota-Saver Cloud Sync Completed.");
       } catch (err) {
         console.error("Cloud Sync Error:", err);
       }
@@ -173,9 +178,9 @@ export const FinancialProvider = ({ children }) => {
   useEffect(() => safeSet('cashly_v3_bills', bills), [bills]);
   useEffect(() => safeSet('cashly_v3_prefs', preferences), [preferences]);
 
-  // Google Login (Popup with mobile Redirect fallback)
+  // Google Login
   const loginWithGoogle = async () => {
-    vibrate();
+    vibrate('medium');
     if (!auth) return;
     try {
       await signInWithPopup(auth, googleProvider);
@@ -191,7 +196,7 @@ export const FinancialProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    vibrate();
+    vibrate('medium');
     if (!auth) return;
     try {
       await signOut(auth);
@@ -205,7 +210,7 @@ export const FinancialProvider = ({ children }) => {
     : wallets.find(w => w.id === activeWalletId) || wallets[0] || { name: 'Main Wallet', currency: 'USD' };
 
   const cycleWallet = () => {
-    vibrate();
+    vibrate('light');
     if (wallets.length === 0) return;
     const sequence = ['all', ...wallets.map(w => w.id)];
     const nextIdx = (sequence.indexOf(activeWalletId) + 1) % sequence.length;
@@ -264,7 +269,7 @@ export const FinancialProvider = ({ children }) => {
     return { totalIncome: inc, totalExpense: exp, balance: bal };
   }, [viewTransactions, monthTransactions, activeWalletId, wallets, preferences?.baseCurrency]);
 
-  // Add Transaction with Budget Warning Trigger
+  // Add Transaction with Budget Warning Trigger & Success Haptics
   const addTransaction = (data) => {
     const newTx = {
       id: `t-${Date.now()}`,
@@ -277,18 +282,19 @@ export const FinancialProvider = ({ children }) => {
     setTransactions(updatedTxList);
     scheduleCloudSync({ transactions: updatedTxList });
 
+    vibrate('success');
+
     // Check Budget Limit Threshold Warning
     if (data.type === 'expense' && data.categoryId) {
       const targetBudget = budgets.find(b => b.categoryId === data.categoryId);
       if (targetBudget && targetBudget.limit > 0) {
-        // Calculate total spent in this category for current month
         let currentTotal = updatedTxList
           .filter(t => t.type === 'expense' && t.categoryId === data.categoryId)
           .reduce((acc, t) => acc + Number(t.amount), 0);
 
         const pct = Math.round((currentTotal / targetBudget.limit) * 100);
         if (pct >= 80) {
-          vibrate();
+          vibrate('warning');
           setBudgetWarning({
             categoryId: data.categoryId,
             categoryName: CATEGORIES[data.categoryId]?.name || 'Category',
@@ -305,6 +311,7 @@ export const FinancialProvider = ({ children }) => {
 
   // Delete Transaction
   const deleteTransaction = (id) => {
+    vibrate('medium');
     const updated = transactions.filter(t => t.id !== id);
     setTransactions(updated);
     scheduleCloudSync({ transactions: updated });
@@ -312,6 +319,7 @@ export const FinancialProvider = ({ children }) => {
 
   // Add Wallet
   const addWallet = (data) => {
+    vibrate('success');
     const newW = {
       id: `w-${Date.now()}`,
       name: data.name,
@@ -327,6 +335,7 @@ export const FinancialProvider = ({ children }) => {
   // Delete Wallet
   const deleteWallet = (id) => {
     if (wallets.length <= 1) return;
+    vibrate('medium');
     const updated = wallets.filter(w => w.id !== id);
     setWallets(updated);
     scheduleCloudSync({ wallets: updated });
@@ -335,6 +344,7 @@ export const FinancialProvider = ({ children }) => {
 
   // Add Budget
   const addBudget = (data) => {
+    vibrate('success');
     const newB = {
       id: `b-${Date.now()}`,
       ...data,
@@ -347,6 +357,7 @@ export const FinancialProvider = ({ children }) => {
 
   // Add Goal / Savings Jar
   const addGoal = (data) => {
+    vibrate('success');
     const newG = {
       id: `g-${Date.now()}`,
       ...data,
@@ -360,6 +371,7 @@ export const FinancialProvider = ({ children }) => {
 
   // Fund Goal
   const fundGoal = (id, newAmount) => {
+    vibrate('success');
     const updated = goals.map(g => g.id === id ? { ...g, currentAmount: newAmount } : g);
     setGoals(updated);
     scheduleCloudSync({ goals: updated });
@@ -367,6 +379,7 @@ export const FinancialProvider = ({ children }) => {
 
   // Add Bill
   const addBill = (data) => {
+    vibrate('success');
     const newBill = {
       id: `bill-${Date.now()}`,
       ...data,
@@ -379,12 +392,13 @@ export const FinancialProvider = ({ children }) => {
 
   // Update Preference
   const updatePreference = (key, value) => {
+    vibrate('light');
     setPreferences(prev => ({ ...prev, [key]: value }));
   };
 
   // CSV Export
   const exportCSV = () => {
-    vibrate();
+    vibrate('medium');
     const headers = ["Date", "Type", "Category", "Amount", "Currency", "Note"];
     const rows = monthTransactions.map(t => {
       const catName = CATEGORIES[t.categoryId]?.name || (t.type === 'transfer' ? 'Transfer' : 'General');

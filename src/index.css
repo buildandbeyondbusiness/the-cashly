@@ -2,63 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  overscroll-behavior: none;
-  background-color: #000000;
-  color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Plus Jakarta Sans", sans-serif;
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  body {
+    @apply bg-black text-white antialiased selection:bg-emerald-500 selection:text-white font-sans;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
-.overflow-y-auto {
-  overscroll-behavior-y: contain;
+/* Apple Tabular Monospaced Numbers Utility (Zero Jitter) */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
+/* Glassmorphism & Liquid Glass Surface Hierarchy */
+.liquid-glass {
+  background: rgba(28, 28, 30, 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.liquid-card {
+  background: rgba(28, 28, 30, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transform: translateZ(0);
+}
+
+.liquid-modal {
+  background: rgba(28, 28, 30, 0.94);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  transform: translateZ(0);
+}
+
+/* Hide scrollbars smoothly */
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }
-
-.scrollbar-hide {
+.no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 20px);
-}
-
-/* Apple Liquid Glass Effect */
-.liquid-glass {
-  background: rgba(28, 28, 30, 0.65);
-  backdrop-filter: blur(25px) saturate(190%);
-  -webkit-backdrop-filter: blur(25px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.liquid-glass-pill {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.liquid-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* Liquid Wave Animation for Savings Jars */
+/* Liquid Wave Fill Animations */
 @keyframes wave {
-  0% { transform: translateX(-50%) rotate(0deg); }
-  50% { transform: translateX(0%) rotate(180deg); }
-  100% { transform: translateX(-50%) rotate(360deg); }
+  0% { transform: translateX(0) translateZ(0); }
+  50% { transform: translateX(-25%) translateZ(0); }
+  100% { transform: translateX(-50%) translateZ(0); }
 }
 
 .animate-wave {
   animation: wave 8s linear infinite;
+  will-change: transform;
 }

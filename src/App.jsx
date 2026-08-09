@@ -96,7 +96,7 @@ function MainAppContent() {
               <p className="opacity-75 text-[11px] font-semibold uppercase tracking-widest mb-0.5">
                 {currentTab === 'planning' ? 'Planning Net Worth' : 'Total Balance'}
               </p>
-              <h1 className="text-4xl font-extrabold tracking-tight font-sans">
+              <h1 className="text-4xl font-extrabold tracking-tight font-sans tabular-nums">
                 {formatCurrency(balance, activeWallet.currency)}
               </h1>
             </div>
