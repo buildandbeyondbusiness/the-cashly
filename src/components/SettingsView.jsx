@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useFinancials, vibrate } from '../context/FinancialContext';
 import { 
   User, Wallet, Plus, Trash2, Globe, Home, Bell, Download, 
-  HelpCircle, Info, ChevronRight, LogOut, LogIn, Cloud 
+  HelpCircle, Info, ChevronRight, LogOut, Cloud, AlertTriangle, ShieldAlert 
 } from 'lucide-react';
 
 export const SettingsView = ({ onAddWallet }) => {
@@ -10,6 +10,7 @@ export const SettingsView = ({ onAddWallet }) => {
     user,
     loginWithGoogle,
     logout,
+    wipeAllData,
     wallets, 
     preferences, 
     updatePreference, 
@@ -19,27 +20,32 @@ export const SettingsView = ({ onAddWallet }) => {
 
   const [activeModal, setActiveModal] = useState(null);
   const [walletToDelete, setWalletToDelete] = useState(null);
+  const [showWipeConfirm, setShowWipeConfirm] = useState(false);
 
-  const SectionTitle = ({ children }) => (
-    <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest px-4 mb-2 mt-7 first:mt-0">
+  const SectionTitle = ({ children, danger }) => (
+    <h3 className={`text-[11px] font-bold uppercase tracking-widest px-4 mb-2 mt-7 first:mt-0 ${
+      danger ? 'text-rose-400 font-extrabold' : 'text-gray-400'
+    }`}>
       {children}
     </h3>
   );
 
-  const Row = ({ icon: Icon, color, label, value, onClick }) => (
+  const Row = ({ icon: Icon, color, label, value, onClick, danger }) => (
     <div 
-      onClick={() => { vibrate(); onClick(); }} 
-      className="flex items-center justify-between p-4 hover:bg-gray-800/40 cursor-pointer group transition-colors"
+      onClick={() => { vibrate('medium'); onClick(); }} 
+      className={`flex items-center justify-between p-4 cursor-pointer group transition-colors ${
+        danger ? 'hover:bg-rose-500/10' : 'hover:bg-gray-800/40'
+      }`}
     >
       <div className="flex items-center gap-4">
         <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white ${color} shadow-sm group-hover:scale-105 transition-transform`}>
           <Icon className="w-4 h-4" />
         </div>
-        <p className="font-bold text-white text-[15px]">{label}</p>
+        <p className={`font-bold text-[15px] ${danger ? 'text-rose-400' : 'text-white'}`}>{label}</p>
       </div>
       <div className="flex items-center gap-2">
         {value && <span className="text-[13px] font-bold text-gray-400">{value}</span>}
-        <ChevronRight className="w-5 h-5 text-gray-500" />
+        <ChevronRight className={`w-5 h-5 ${danger ? 'text-rose-500' : 'text-gray-500'}`} />
       </div>
     </div>
   );
@@ -127,7 +133,7 @@ export const SettingsView = ({ onAddWallet }) => {
             </div>
             {wallets.length > 1 && (
               <button 
-                onClick={() => { vibrate(); setWalletToDelete(w.id); }} 
+                onClick={() => { vibrate('medium'); setWalletToDelete(w.id); }} 
                 className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-full transition-colors active:scale-90"
               >
                 <Trash2 className="w-5 h-5" />
@@ -154,7 +160,7 @@ export const SettingsView = ({ onAddWallet }) => {
         
         <div 
           className="flex items-center justify-between p-4 hover:bg-gray-800/40 transition-colors cursor-pointer" 
-          onClick={() => { vibrate(); updatePreference('isDarkMode', !preferences.isDarkMode); }}
+          onClick={() => { vibrate('light'); updatePreference('isDarkMode', !preferences.isDarkMode); }}
         >
           <div className="flex items-center gap-4">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white bg-indigo-500 shadow-sm">
@@ -178,6 +184,18 @@ export const SettingsView = ({ onAddWallet }) => {
         <Row icon={Info} color="bg-gray-700" label="About Cashly" onClick={() => setActiveModal('About')} />
       </div>
 
+      {/* Danger Zone */}
+      <SectionTitle danger>Danger Zone</SectionTitle>
+      <div className="bg-[#1C1C1E] rounded-3xl shadow-sm border border-rose-500/30 overflow-hidden">
+        <Row 
+          icon={AlertTriangle} 
+          color="bg-rose-600" 
+          label="Wipe All Data & Reset" 
+          danger 
+          onClick={() => setShowWipeConfirm(true)} 
+        />
+      </div>
+
       {/* Delete Wallet Dialog */}
       {walletToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setWalletToDelete(null)}>
@@ -187,10 +205,43 @@ export const SettingsView = ({ onAddWallet }) => {
             <div className="flex gap-2 pt-2">
               <button onClick={() => setWalletToDelete(null)} className="flex-1 py-2.5 rounded-xl font-bold text-xs bg-gray-800 text-gray-300">Cancel</button>
               <button 
-                onClick={() => { vibrate(); deleteWallet(walletToDelete); setWalletToDelete(null); }} 
+                onClick={() => { vibrate('medium'); deleteWallet(walletToDelete); setWalletToDelete(null); }} 
                 className="flex-1 py-2.5 rounded-xl font-bold text-xs bg-rose-600 text-white"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Wipe All Data Confirmation Dialog */}
+      {showWipeConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in" onClick={() => setShowWipeConfirm(false)}>
+          <div className="bg-[#1C1C1E] rounded-[2rem] w-full max-w-xs border border-rose-500/50 text-center p-6 space-y-4 shadow-2xl relative" onClick={e => e.stopPropagation()}>
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto border border-rose-500/30">
+              <ShieldAlert className="w-6 h-6 animate-pulse" />
+            </div>
+            <h3 className="font-extrabold text-lg text-white">Wipe All Data?</h3>
+            <p className="text-xs text-gray-400 leading-relaxed">
+              This will permanently delete all transactions, wallets, budgets, and savings goals from this device and your cloud account.
+            </p>
+            <div className="flex gap-2 pt-2">
+              <button 
+                onClick={() => setShowWipeConfirm(false)} 
+                className="flex-1 py-3 rounded-2xl font-bold text-xs bg-gray-800 text-gray-300 hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => { 
+                  vibrate('warning'); 
+                  setShowWipeConfirm(false); 
+                  wipeAllData(); 
+                }} 
+                className="flex-1 py-3 rounded-2xl font-bold text-xs bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30"
+              >
+                Wipe Data
               </button>
             </div>
           </div>
@@ -211,7 +262,7 @@ export const SettingsView = ({ onAddWallet }) => {
                 {['USD', 'EUR', 'GBP', 'JPY', 'INR'].map(c => (
                   <button 
                     key={c} 
-                    onClick={() => { vibrate(); updatePreference('baseCurrency', c); setActiveModal(null); }} 
+                    onClick={() => { vibrate('light'); updatePreference('baseCurrency', c); setActiveModal(null); }} 
                     className={`w-full flex items-center justify-between p-3.5 rounded-2xl border transition-colors ${
                       preferences.baseCurrency === c ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400 font-bold' : 'border-gray-800 text-gray-300'
                     }`}
@@ -243,7 +294,7 @@ export const SettingsView = ({ onAddWallet }) => {
               <div className="text-center py-4 space-y-2">
                 <img src="./logo.jpg" alt="Logo" className="w-14 h-14 rounded-2xl mx-auto border border-emerald-500/30" />
                 <p className="font-extrabold text-base">Cashly 2.0</p>
-                <p className="text-xs text-gray-400">Version 3.3.0 (Firebase Sync Edition)<br/><span className="text-emerald-400 font-bold mt-1 block">Your wealth, simplified.</span></p>
+                <p className="text-xs text-gray-400">Version 3.5.0 (Per-Account Sync & Danger Zone)<br/><span className="text-emerald-400 font-bold mt-1 block">Your wealth, simplified.</span></p>
               </div>
             )}
           </div>

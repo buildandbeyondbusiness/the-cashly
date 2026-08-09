@@ -129,9 +129,26 @@ export const FinancialProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // Efficient Quota-Saver Firestore Sync (Single Document Snapshot & Listener)
+  // Per-User Cloud Sync: Reset state when account changes & attach user doc listener
   useEffect(() => {
-    if (!user || !db) return;
+    if (!db) return;
+
+    if (!user) {
+      // If user logs out, reset state to local defaults
+      setWallets(safeGet('cashly_v3_wallets', DEFAULT_WALLETS));
+      setTransactions(safeGet('cashly_v3_transactions', []));
+      setBudgets(safeGet('cashly_v3_budgets', []));
+      setGoals(safeGet('cashly_v3_goals', []));
+      setBills(safeGet('cashly_v3_bills', []));
+      return;
+    }
+
+    // Reset state before populating new user's cloud data to prevent data bleeding
+    setWallets(DEFAULT_WALLETS);
+    setTransactions([]);
+    setBudgets([]);
+    setGoals([]);
+    setBills([]);
 
     const userDocRef = doc(db, 'users', user.uid);
     const unsub = onSnapshot(userDocRef, (snap) => {
@@ -203,6 +220,38 @@ export const FinancialProvider = ({ children }) => {
     } catch (err) {
       console.error("Logout error:", err);
     }
+  };
+
+  // Wipe All Data (Danger Zone Action)
+  const wipeAllData = async () => {
+    vibrate('warning');
+    
+    // Clear local storage
+    localStorage.removeItem('cashly_v3_wallets');
+    localStorage.removeItem('cashly_v3_transactions');
+    localStorage.removeItem('cashly_v3_budgets');
+    localStorage.removeItem('cashly_v3_goals');
+    localStorage.removeItem('cashly_v3_bills');
+
+    // Wipe Firestore User Document if logged in
+    if (user && db) {
+      try {
+        const userDocRef = doc(db, 'users', user.uid);
+        await deleteDoc(userDocRef);
+      } catch (err) {
+        console.error("Firestore wipe error:", err);
+      }
+    }
+
+    // Reset local state to blank defaults
+    setWallets(DEFAULT_WALLETS);
+    setTransactions([]);
+    setBudgets([]);
+    setGoals([]);
+    setBills([]);
+    setActiveWalletId('all');
+
+    alert("All financial ledger data has been completely wiped.");
   };
 
   const activeWallet = activeWalletId === 'all'
@@ -430,6 +479,7 @@ export const FinancialProvider = ({ children }) => {
       authLoading,
       loginWithGoogle,
       logout,
+      wipeAllData,
       wallets,
       transactions,
       budgets,
