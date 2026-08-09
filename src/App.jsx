@@ -52,9 +52,9 @@ function MainAppContent() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-black flex items-center justify-center font-sans overflow-hidden p-0 sm:p-4">
-      {/* Perfectly Centered Device Frame Container */}
-      <div className="relative w-full max-w-[420px] h-[100dvh] sm:h-[840px] sm:rounded-[44px] sm:border-[8px] border-gray-800 bg-black overflow-hidden flex flex-col shadow-2xl transition-all">
+    <div className="fixed inset-0 bg-black flex items-center justify-center font-sans overflow-hidden p-0 sm:p-4 touch-none">
+      {/* Perfectly Centered & Locked Device Frame Container */}
+      <div className="relative w-full max-w-[420px] h-full sm:h-[840px] sm:max-h-[840px] sm:rounded-[44px] sm:border-[8px] border-gray-800 bg-black overflow-hidden flex flex-col shadow-2xl">
         
         {/* Pixel-Precise Dropping Liquid Island at top inside device frame */}
         <DynamicIsland onOpenQuickLog={() => setIsAddTxOpen(true)} />
@@ -111,7 +111,7 @@ function MainAppContent() {
                 </div>
                 <div>
                   <p className="text-white/70 text-[10px] font-semibold uppercase">Income</p>
-                  <p className="font-bold text-sm text-emerald-400">{formatCurrency(totalIncome, activeWallet.currency)}</p>
+                  <p className="font-bold text-sm text-emerald-400 tabular-nums">{formatCurrency(totalIncome, activeWallet.currency)}</p>
                 </div>
               </div>
 
@@ -120,7 +120,7 @@ function MainAppContent() {
               <div className="flex items-center gap-3">
                 <div className="text-right">
                   <p className="text-white/70 text-[10px] font-semibold uppercase">Expenses</p>
-                  <p className="font-bold text-sm text-white">{formatCurrency(totalExpense, activeWallet.currency)}</p>
+                  <p className="font-bold text-sm text-white tabular-nums">{formatCurrency(totalExpense, activeWallet.currency)}</p>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shadow-inner">
                   <TrendingUp className="w-4 h-4" />
@@ -152,8 +152,8 @@ function MainAppContent() {
           </div>
         )}
 
-        {/* Tab View Body */}
-        <div className="flex-1 overflow-y-auto pb-32 no-scrollbar relative z-0">
+        {/* Tab View Body with Overscroll Lock */}
+        <div className="flex-1 overflow-y-auto overscroll-contain pb-32 no-scrollbar relative z-0 touch-pan-y">
           {currentTab === 'transactions' && (
             <RecordsView onOpenAdd={() => setIsAddTxOpen(true)} />
           )}

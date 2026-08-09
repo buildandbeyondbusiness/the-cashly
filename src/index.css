@@ -3,12 +3,14 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-black text-white antialiased selection:bg-emerald-500 selection:text-white font-sans;
+  html, body, #root {
+    @apply bg-black text-white antialiased selection:bg-emerald-500 selection:text-white font-sans w-full h-full overflow-hidden;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+    touch-action: pan-y;
   }
 }
 
@@ -51,6 +53,7 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  overscroll-behavior-y: contain;
 }
 
 /* Liquid Wave Fill Animations */
