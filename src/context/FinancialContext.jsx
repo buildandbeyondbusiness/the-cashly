@@ -5,6 +5,8 @@ import {
   db, 
   googleProvider, 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   signOut, 
   onAuthStateChanged,
   collection,
@@ -91,12 +93,17 @@ export const FinancialProvider = ({ children }) => {
   const [activeWalletId, setActiveWalletId] = useState('all');
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Listen to Firebase Authentication
+  // Listen to Firebase Authentication & handle mobile redirect result
   useEffect(() => {
     if (!auth) {
       setAuthLoading(false);
       return;
     }
+
+    getRedirectResult(auth).catch(err => {
+      console.log("Redirect check result:", err);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, (usr) => {
       setUser(usr);
       setAuthLoading(false);
@@ -169,15 +176,20 @@ export const FinancialProvider = ({ children }) => {
     }
   };
 
-  // Google Login & Logout
+  // Google Login (Popup with mobile Redirect fallback)
   const loginWithGoogle = async () => {
     vibrate();
     if (!auth) return;
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (err) {
-      console.error("Google Auth error:", err);
-      alert("Could not sign in with Google. Please try again.");
+      console.log("Popup blocked/failed, trying redirect:", err);
+      try {
+        await signInWithRedirect(auth, googleProvider);
+      } catch (redirectErr) {
+        console.error("Google Auth error:", redirectErr);
+        alert("Google Sign-In failed. Please check Firebase Authorized Domains in your Firebase Console.");
+      }
     }
   };
 
@@ -320,7 +332,7 @@ export const FinancialProvider = ({ children }) => {
 
   // Fund Goal
   const fundGoal = (id, newAmount) => {
-    const goalObj = goals.find(g => g.id === id);
+    const goalObj = goals.find(g => g.id === g.id);
     if (goalObj) {
       const updated = { ...goalObj, currentAmount: newAmount };
       saveEntry('goals', updated, id);

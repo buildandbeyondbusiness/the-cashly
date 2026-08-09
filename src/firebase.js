@@ -3,6 +3,8 @@ import {
   getAuth, 
   GoogleAuthProvider, 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   signOut, 
   onAuthStateChanged 
 } from 'firebase/auth';
@@ -34,8 +36,9 @@ try {
   auth = getAuth(app);
   db = getFirestore(app);
   googleProvider = new GoogleAuthProvider();
+  googleProvider.setCustomParameters({ prompt: 'select_account' });
 } catch (e) {
-  console.warn("Firebase safely bypassed due to init exception:", e);
+  console.warn("Firebase init exception:", e);
 }
 
 export { 
@@ -44,6 +47,8 @@ export {
   db, 
   googleProvider, 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   signOut, 
   onAuthStateChanged,
   collection,
