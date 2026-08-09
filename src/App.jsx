@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { FinancialProvider, useFinancials, formatCurrency, vibrate } from './context/FinancialContext';
-import { LockScreen } from './components/LockScreen';
 import { RecordsView } from './components/RecordsView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { PlanningView } from './components/PlanningView';
@@ -15,7 +14,6 @@ import { AddGoalModal } from './components/AddGoalModal';
 import { FundGoalModal } from './components/FundGoalModal';
 import { NotificationsModal } from './components/NotificationsModal';
 import { AddBillModal } from './components/AddBillModal';
-import { PinSetupModal } from './components/PinSetupModal';
 
 import { 
   RefreshCw, Wallet, Bell, ChevronLeft, ChevronRight, TrendingUp, TrendingDown 
@@ -30,11 +28,7 @@ function MainAppContent() {
     balance, 
     totalIncome, 
     totalExpense, 
-    bills, 
-    isLocked, 
-    setIsLocked, 
-    preferences, 
-    updatePreference 
+    bills
   } = useFinancials();
 
   const [currentTab, setCurrentTab] = useState('transactions'); // 'transactions' | 'analytics' | 'planning' | 'settings'
@@ -47,11 +41,6 @@ function MainAppContent() {
   const [fundingGoal, setFundingGoal] = useState(null);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isAddBillOpen, setIsAddBillOpen] = useState(false);
-  const [isPinSetupOpen, setIsPinSetupOpen] = useState(false);
-
-  if (isLocked) {
-    return <LockScreen pin={preferences?.securityPin} onUnlock={() => setIsLocked(false)} />;
-  }
 
   const getHeaderStyle = () => {
     if (currentTab === 'settings') return 'bg-[#000000] text-white';
@@ -64,7 +53,7 @@ function MainAppContent() {
       {/* Perfectly Centered Device Frame Container */}
       <div className="relative w-full max-w-[420px] h-[100dvh] sm:h-[840px] sm:rounded-[44px] sm:border-[8px] border-gray-800 bg-black overflow-hidden flex flex-col shadow-2xl transition-all">
         
-        {/* Pixel-Precise Dynamic Island at top inside device frame */}
+        {/* Pixel-Precise Dropping Liquid Island at top inside device frame */}
         <DynamicIsland onOpenQuickLog={() => setIsAddTxOpen(true)} />
 
         {/* Top Hero Header Banner */}
@@ -178,7 +167,6 @@ function MainAppContent() {
           {currentTab === 'settings' && (
             <SettingsView 
               onAddWallet={() => { vibrate(); setIsAddWalletOpen(true); }}
-              onEnableSecurity={() => { vibrate(); setIsPinSetupOpen(true); }}
             />
           )}
         </div>
@@ -201,15 +189,6 @@ function MainAppContent() {
         <FundGoalModal goal={fundingGoal} onClose={() => setFundingGoal(null)} />
         <NotificationsModal isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} onAddBill={() => setIsAddBillOpen(true)} />
         <AddBillModal isOpen={isAddBillOpen} onClose={() => setIsAddBillOpen(false)} />
-        <PinSetupModal 
-          isOpen={isPinSetupOpen} 
-          onClose={() => setIsPinSetupOpen(false)} 
-          onSave={(pin) => { 
-            updatePreference('securityPin', pin); 
-            updatePreference('faceId', true); 
-            setIsPinSetupOpen(false); 
-          }} 
-        />
 
       </div>
     </div>

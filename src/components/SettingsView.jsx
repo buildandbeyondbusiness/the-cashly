@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useFinancials, vibrate } from '../context/FinancialContext';
 import { 
-  User, Wallet, Plus, Trash2, Globe, Home, Shield, Bell, Download, 
-  HelpCircle, Info, ChevronRight, LogOut 
+  User, Wallet, Plus, Trash2, Globe, Home, Bell, Download, 
+  HelpCircle, Info, ChevronRight 
 } from 'lucide-react';
 
-export const SettingsView = ({ onAddWallet, onEnableSecurity }) => {
+export const SettingsView = ({ onAddWallet }) => {
   const { 
     wallets, 
     preferences, 
@@ -111,8 +111,7 @@ export const SettingsView = ({ onAddWallet, onEnableSecurity }) => {
           </button>
         </div>
 
-        <Row icon={Shield} color="bg-emerald-500" label="App Lock (PIN / Face ID)" onClick={() => setActiveModal('Security')} />
-        <Row icon={Bell} color="bg-rose-500" label="Notifications & Alerts" onClick={() => setActiveModal('Notifications')} />
+        <Row icon={Bell} color="bg-rose-500" label="Notifications & Reminders" onClick={() => setActiveModal('Notifications')} />
       </div>
 
       {/* Tools & Export */}
@@ -168,15 +167,11 @@ export const SettingsView = ({ onAddWallet, onEnableSecurity }) => {
               </div>
             )}
 
-            {activeModal === 'Security' && (
-              <div className="space-y-3">
-                <p className="text-xs text-gray-400">Set a 4-digit PIN to lock your Cashly finance ledger.</p>
-                <button 
-                  onClick={() => { setActiveModal(null); onEnableSecurity(); }} 
-                  className="w-full py-3 rounded-2xl bg-emerald-500 font-bold text-white text-xs"
-                >
-                  Set Security PIN
-                </button>
+            {activeModal === 'Notifications' && (
+              <div className="space-y-3 text-center py-2">
+                <Bell className="w-10 h-10 text-rose-400 mx-auto opacity-70" />
+                <p className="font-bold text-sm">Bill Reminders Active</p>
+                <p className="text-xs text-gray-400">Upcoming bill notifications are enabled automatically based on your recurring bills.</p>
               </div>
             )}
 
@@ -192,7 +187,7 @@ export const SettingsView = ({ onAddWallet, onEnableSecurity }) => {
               <div className="text-center py-4 space-y-2">
                 <img src="./logo.jpg" alt="Logo" className="w-14 h-14 rounded-2xl mx-auto border border-emerald-500/30" />
                 <p className="font-extrabold text-base">Cashly 2.0</p>
-                <p className="text-xs text-gray-400">Version 3.1.0 (iOS Native Design Edition)<br/><span className="text-emerald-400 font-bold mt-1 block">Your wealth, simplified.</span></p>
+                <p className="text-xs text-gray-400">Version 3.2.0 (Apple Liquid Glass Edition)<br/><span className="text-emerald-400 font-bold mt-1 block">Your wealth, simplified.</span></p>
               </div>
             )}
           </div>

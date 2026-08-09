@@ -69,14 +69,11 @@ export const FinancialProvider = ({ children }) => {
   const [bills, setBills] = useState(() => safeGet('cashly_v3_bills', []));
   const [preferences, setPreferences] = useState(() => safeGet('cashly_v3_prefs', { 
     baseCurrency: 'USD', 
-    isDarkMode: true, 
-    securityPin: null, 
-    faceId: false 
+    isDarkMode: true 
   }));
 
   const [activeWalletId, setActiveWalletId] = useState('all');
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [isLocked, setIsLocked] = useState(() => !!preferences?.securityPin);
 
   useEffect(() => safeSet('cashly_v3_wallets', wallets), [wallets]);
   useEffect(() => safeSet('cashly_v3_transactions', transactions), [transactions]);
@@ -245,7 +242,7 @@ export const FinancialProvider = ({ children }) => {
     });
     
     const csvString = [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([jsonStr || csvString], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
@@ -272,8 +269,6 @@ export const FinancialProvider = ({ children }) => {
       totalIncome,
       totalExpense,
       balance,
-      isLocked,
-      setIsLocked,
       addTransaction,
       deleteTransaction,
       addWallet,
