@@ -24,16 +24,21 @@ const firebaseConfig = {
   appId: "1:591724211566:web:cec1db7bfaf452cc5d257f"
 };
 
-let app, auth, db;
-try {
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-} catch (e) {
-  console.error("Firebase initialization failed:", e);
-}
+let app = null;
+let auth = null;
+let db = null;
+let googleProvider = null;
 
-const googleProvider = new GoogleAuthProvider();
+try {
+  if (firebaseConfig && firebaseConfig.apiKey) {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    googleProvider = new GoogleAuthProvider();
+  }
+} catch (e) {
+  console.warn("Firebase safely bypassed due to init exception:", e);
+}
 
 export { 
   app, 
