@@ -6,6 +6,7 @@ import { AnalyticsView } from './components/AnalyticsView';
 import { PlanningView } from './components/PlanningView';
 import { SettingsView } from './components/SettingsView';
 import { FloatingLiquidNavbar } from './components/FloatingLiquidNavbar';
+import { DynamicIsland } from './components/DynamicIsland';
 
 import { AddTransactionModal } from './components/AddTransactionModal';
 import { AddWalletModal } from './components/AddWalletModal';
@@ -62,8 +63,11 @@ function MainAppContent() {
     <div className="w-full h-full bg-black sm:p-4 flex items-center justify-center font-sans">
       <div className="w-full max-w-md h-[100dvh] sm:h-[100vh] sm:max-h-[850px] sm:rounded-[40px] sm:border-[8px] border-gray-800/80 bg-black overflow-hidden relative flex flex-col shadow-2xl transition-colors">
         
+        {/* Pixel-Precise iPhone 17 Dynamic Island */}
+        <DynamicIsland onOpenQuickLog={() => setIsAddTxOpen(true)} />
+
         {/* Top Liquid Glass Hero Header Banner */}
-        <div className={`${getHeaderStyle()} pt-12 pb-5 px-6 rounded-b-[2.5rem] shadow-sm z-10 flex-shrink-0 transition-all duration-500 relative overflow-hidden backdrop-blur-xl border-b border-white/10`}>
+        <div className={`${getHeaderStyle()} pt-14 pb-5 px-6 rounded-b-[2.5rem] shadow-sm z-10 flex-shrink-0 transition-all duration-500 relative overflow-hidden backdrop-blur-xl border-b border-white/10`}>
           
           <div className="flex justify-between items-center mb-4 relative z-10">
             {/* Cycle Wallet Button */}
