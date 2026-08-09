@@ -2,8 +2,7 @@ import React, { useMemo } from 'react';
 import { useFinancials, CATEGORIES, EX_RATES, formatCurrency, vibrate } from '../context/FinancialContext';
 import { 
   Coffee, Car, ShoppingBag, Film, FileText, Home, Heart, Book, 
-  Repeat, Zap, DollarSign, Landmark, ArrowRightLeft, Rocket, Tag, 
-  BarChart2, TrendingUp, TrendingDown 
+  Repeat, Zap, DollarSign, Landmark, ArrowRightLeft, Rocket, Tag 
 } from 'lucide-react';
 
 const ICON_MAP = {
@@ -34,40 +33,7 @@ const formatDateHeader = (dateString) => {
 };
 
 export const RecordsView = ({ onOpenAdd }) => {
-  const { monthTransactions, totalIncome, totalExpense, wallets, activeWalletId, activeWallet, deleteTransaction } = useFinancials();
-
-  // Calculate weekly breakdown for graph visualization
-  const weeklyGraphData = useMemo(() => {
-    const weeks = [
-      { name: 'Week 1', income: 0, expense: 0 },
-      { name: 'Week 2', income: 0, expense: 0 },
-      { name: 'Week 3', income: 0, expense: 0 },
-      { name: 'Week 4', income: 0, expense: 0 },
-    ];
-
-    const baseRate = EX_RATES[activeWallet.currency] || 1;
-
-    monthTransactions.forEach(t => {
-      const day = new Date(t.date).getDate();
-      const weekIdx = Math.min(3, Math.floor((day - 1) / 7));
-      
-      let amount = Number(t.amount) || 0;
-      if (activeWalletId === 'all' && t.type !== 'transfer') {
-        const w = wallets.find(w => w.id === t.walletId);
-        amount = (amount * (EX_RATES[w?.currency] || 1)) / baseRate;
-      }
-
-      if (t.type === 'income') {
-        weeks[weekIdx].income += amount;
-      } else if (t.type === 'expense') {
-        weeks[weekIdx].expense += amount;
-      }
-    });
-
-    const maxVal = Math.max(...weeks.flatMap(w => [w.income, w.expense]), 1);
-
-    return { weeks, maxVal };
-  }, [monthTransactions, activeWallet.currency, wallets, activeWalletId]);
+  const { monthTransactions, wallets, activeWalletId, activeWallet, deleteTransaction } = useFinancials();
 
   // Grouped transactions by date
   const groupedTransactions = useMemo(() => {
@@ -98,75 +64,11 @@ export const RecordsView = ({ onOpenAdd }) => {
   }, [monthTransactions, activeWalletId, wallets, activeWallet.currency]);
 
   return (
-    <div className="px-4 py-4 space-y-6">
+    <div className="px-4 py-4 space-y-5">
       
-      {/* 1. Interactive Overview Trends Graph Widget */}
-      <div className="p-5 rounded-3xl liquid-card border border-white/10 space-y-4 shadow-xl">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
-              <BarChart2 className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="font-extrabold text-white text-sm">Monthly Trend Graph</h3>
-              <p className="text-[10px] text-gray-400">Income vs Expenses breakdown</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 text-[10px] font-bold">
-            <div className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <span className="text-gray-300">Income</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-              <span className="text-gray-300">Expense</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Visual Dual Bar Chart */}
-        <div className="grid grid-cols-4 gap-3 pt-2 items-end h-28 border-b border-white/10 pb-2">
-          {weeklyGraphData.weeks.map((w, idx) => {
-            const incHeight = Math.min(100, Math.round((w.income / weeklyGraphData.maxVal) * 100));
-            const expHeight = Math.min(100, Math.round((w.expense / weeklyGraphData.maxVal) * 100));
-
-            return (
-              <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end">
-                <div className="flex items-end gap-1 w-full justify-center h-20">
-                  {/* Income Bar */}
-                  <div 
-                    className="w-2.5 rounded-t-md bg-emerald-500 transition-all duration-700 shadow-[0_0_8px_rgba(16,185,129,0.5)]" 
-                    style={{ height: `${Math.max(6, incHeight)}%` }}
-                    title={`Income: ${formatCurrency(w.income, activeWallet.currency)}`}
-                  />
-                  {/* Expense Bar */}
-                  <div 
-                    className="w-2.5 rounded-t-md bg-rose-500 transition-all duration-700 shadow-[0_0_8px_rgba(244,63,94,0.5)]" 
-                    style={{ height: `${Math.max(6, expHeight)}%` }}
-                    title={`Expense: ${formatCurrency(w.expense, activeWallet.currency)}`}
-                  />
-                </div>
-                <span className="text-[10px] font-bold text-gray-400">{w.name}</span>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Summary Footer Pill */}
-        <div className="flex items-center justify-between text-xs pt-1">
-          <span className="text-gray-400 font-medium">Net Monthly Flow</span>
-          <span className={`font-extrabold font-mono ${
-            totalIncome >= totalExpense ? 'text-emerald-400' : 'text-rose-400'
-          }`}>
-            {totalIncome >= totalExpense ? '+' : ''}{formatCurrency(totalIncome - totalExpense, activeWallet.currency)}
-          </span>
-        </div>
-      </div>
-
-      {/* 2. Timeline Activity List / Clean Empty State */}
+      {/* Clean Timeline Activity List / Clean Empty State */}
       {groupedTransactions.length === 0 ? (
-        <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-10 px-6 animate-fade-in">
+        <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-16 px-6 animate-fade-in">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-lg ring-8 ring-emerald-500/20">
             <Rocket className="w-10 h-10 text-white" />
           </div>
@@ -194,8 +96,8 @@ export const RecordsView = ({ onOpenAdd }) => {
                 </span>
               </div>
 
-              <div className="bg-[#1C1C1E] rounded-3xl shadow-sm border border-gray-800/60 overflow-hidden">
-                {group.items.map((tx, i) => {
+              <div className="bg-[#1C1C1E] rounded-3xl shadow-sm border border-gray-800/60 overflow-hidden divide-y divide-gray-800/40">
+                {group.items.map((tx) => {
                   const isTransfer = tx.type === 'transfer';
                   const category = isTransfer ? null : (CATEGORIES[tx.categoryId] || { name: 'General', bg: 'bg-emerald-500' });
                   const CatIcon = category ? (ICON_MAP[tx.categoryId] || Tag) : ArrowRightLeft;
@@ -215,9 +117,7 @@ export const RecordsView = ({ onOpenAdd }) => {
                   return (
                     <div 
                       key={tx.id} 
-                      className={`flex items-center justify-between p-4 hover:bg-gray-800/40 cursor-pointer transition-colors group ${
-                        i !== group.items.length - 1 ? 'border-b border-gray-800/40' : ''
-                      }`}
+                      className="flex items-center justify-between p-4 hover:bg-gray-800/40 cursor-pointer transition-colors group"
                       onContextMenu={(e) => {
                         e.preventDefault();
                         if (window.confirm('Delete this transaction?')) deleteTransaction(tx.id);
