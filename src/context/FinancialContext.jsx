@@ -1,5 +1,18 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import confetti from 'canvas-confetti';
+import { 
+  auth, 
+  db, 
+  googleProvider, 
+  signInWithPopup, 
+  signOut, 
+  onAuthStateChanged,
+  collection,
+  doc,
+  setDoc,
+  deleteDoc,
+  onSnapshot
+} from '../firebase';
 
 const FinancialContext = createContext(null);
 
@@ -62,6 +75,9 @@ export const formatCurrency = (amount, currencyCode = 'USD') => {
 };
 
 export const FinancialProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
   const [wallets, setWallets] = useState(() => safeGet('cashly_v3_wallets', DEFAULT_WALLETS));
   const [transactions, setTransactions] = useState(() => safeGet('cashly_v3_transactions', []));
   const [budgets, setBudgets] = useState(() => safeGet('cashly_v3_budgets', []));
@@ -75,12 +91,105 @@ export const FinancialProvider = ({ children }) => {
   const [activeWalletId, setActiveWalletId] = useState('all');
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
+  // Listen to Firebase Authentication
+  useEffect(() => {
+    if (!auth) {
+      setAuthLoading(false);
+      return;
+    }
+    const unsubscribe = onAuthStateChanged(auth, (usr) => {
+      setUser(usr);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Sync to Cloud Firestore when user is logged in
+  useEffect(() => {
+    if (!user || !db) return;
+
+    const syncCollection = (collName, setter) => {
+      const collRef = collection(db, 'users', user.uid, collName);
+      return onSnapshot(collRef, (snap) => {
+        if (!snap.empty) {
+          const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          setter(items);
+        }
+      }, err => console.error(`Sync error ${collName}:`, err));
+    };
+
+    const unsubWallets = syncCollection('wallets', setWallets);
+    const unsubTx = syncCollection('transactions', setTransactions);
+    const unsubBudgets = syncCollection('budgets', setBudgets);
+    const unsubGoals = syncCollection('goals', setGoals);
+    const unsubBills = syncCollection('bills', setBills);
+
+    return () => {
+      unsubWallets();
+      unsubTx();
+      unsubBudgets();
+      unsubGoals();
+      unsubBills();
+    };
+  }, [user]);
+
+  // Sync state to local storage as fallback
   useEffect(() => safeSet('cashly_v3_wallets', wallets), [wallets]);
   useEffect(() => safeSet('cashly_v3_transactions', transactions), [transactions]);
   useEffect(() => safeSet('cashly_v3_budgets', budgets), [budgets]);
   useEffect(() => safeSet('cashly_v3_goals', goals), [goals]);
   useEffect(() => safeSet('cashly_v3_bills', bills), [bills]);
   useEffect(() => safeSet('cashly_v3_prefs', preferences), [preferences]);
+
+  // Save entry helper for Firestore + local state
+  const saveEntry = async (collName, data, id) => {
+    const entryId = id || data.id || `${collName.substring(0, 1)}-${Date.now()}`;
+    const payload = { ...data, id: entryId };
+
+    if (user && db) {
+      try {
+        const docRef = doc(db, 'users', user.uid, collName, entryId);
+        await setDoc(docRef, payload, { merge: true });
+      } catch (err) {
+        console.error("Firestore save error:", err);
+      }
+    }
+
+    return payload;
+  };
+
+  const deleteEntry = async (collName, id) => {
+    if (user && db) {
+      try {
+        const docRef = doc(db, 'users', user.uid, collName, id);
+        await deleteDoc(docRef);
+      } catch (err) {
+        console.error("Firestore delete error:", err);
+      }
+    }
+  };
+
+  // Google Login & Logout
+  const loginWithGoogle = async () => {
+    vibrate();
+    if (!auth) return;
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err) {
+      console.error("Google Auth error:", err);
+      alert("Could not sign in with Google. Please try again.");
+    }
+  };
+
+  const logout = async () => {
+    vibrate();
+    if (!auth) return;
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
 
   const activeWallet = activeWalletId === 'all'
     ? { id: 'all', name: 'All Wallets', currency: preferences?.baseCurrency || 'USD' }
@@ -154,12 +263,14 @@ export const FinancialProvider = ({ children }) => {
       ...data,
       amount: parseFloat(data.amount)
     };
+    saveEntry('transactions', newTx);
     setTransactions(prev => [newTx, ...prev]);
     confetti({ particleCount: 30, spread: 50, origin: { y: 0.85 } });
   };
 
   // Delete Transaction
   const deleteTransaction = (id) => {
+    deleteEntry('transactions', id);
     setTransactions(prev => prev.filter(t => t.id !== id));
   };
 
@@ -172,12 +283,14 @@ export const FinancialProvider = ({ children }) => {
       iconString: data.iconString || 'Wallet',
       balance: 0
     };
+    saveEntry('wallets', newW);
     setWallets(prev => [...prev, newW]);
   };
 
   // Delete Wallet
   const deleteWallet = (id) => {
     if (wallets.length <= 1) return;
+    deleteEntry('wallets', id);
     setWallets(prev => prev.filter(w => w.id !== id));
     if (activeWalletId === id) setActiveWalletId('all');
   };
@@ -189,6 +302,7 @@ export const FinancialProvider = ({ children }) => {
       ...data,
       limit: parseFloat(data.limit)
     };
+    saveEntry('budgets', newB);
     setBudgets(prev => [...prev, newB]);
   };
 
@@ -200,11 +314,17 @@ export const FinancialProvider = ({ children }) => {
       targetAmount: parseFloat(data.targetAmount),
       currentAmount: 0
     };
+    saveEntry('goals', newG);
     setGoals(prev => [...prev, newG]);
   };
 
   // Fund Goal
   const fundGoal = (id, newAmount) => {
+    const goalObj = goals.find(g => g.id === id);
+    if (goalObj) {
+      const updated = { ...goalObj, currentAmount: newAmount };
+      saveEntry('goals', updated, id);
+    }
     setGoals(prev => prev.map(g => g.id === id ? { ...g, currentAmount: newAmount } : g));
   };
 
@@ -215,6 +335,7 @@ export const FinancialProvider = ({ children }) => {
       ...data,
       amount: parseFloat(data.amount)
     };
+    saveEntry('bills', newBill);
     setBills(prev => [...prev, newBill]);
   };
 
@@ -253,6 +374,10 @@ export const FinancialProvider = ({ children }) => {
 
   return (
     <FinancialContext.Provider value={{
+      user,
+      authLoading,
+      loginWithGoogle,
+      logout,
       wallets,
       transactions,
       budgets,
