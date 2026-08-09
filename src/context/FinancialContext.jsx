@@ -242,7 +242,7 @@ export const FinancialProvider = ({ children }) => {
     });
     
     const csvString = [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([jsonStr || csvString], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
