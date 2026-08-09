@@ -60,13 +60,14 @@ function MainAppContent() {
   };
 
   return (
-    <div className="w-full h-full bg-black sm:p-4 flex items-center justify-center font-sans">
-      <div className="w-full max-w-md h-[100dvh] sm:h-[100vh] sm:max-h-[850px] sm:rounded-[40px] sm:border-[8px] border-gray-800/80 bg-black overflow-hidden relative flex flex-col shadow-2xl transition-colors">
+    <div className="w-full min-h-screen bg-black flex items-center justify-center font-sans overflow-hidden p-0 sm:p-4">
+      {/* Perfectly Centered Device Frame Container */}
+      <div className="relative w-full max-w-[420px] h-[100dvh] sm:h-[840px] sm:rounded-[44px] sm:border-[8px] border-gray-800 bg-black overflow-hidden flex flex-col shadow-2xl transition-all">
         
-        {/* Pixel-Precise iPhone 17 Dynamic Island */}
+        {/* Pixel-Precise Dynamic Island at top inside device frame */}
         <DynamicIsland onOpenQuickLog={() => setIsAddTxOpen(true)} />
 
-        {/* Top Liquid Glass Hero Header Banner */}
+        {/* Top Hero Header Banner */}
         <div className={`${getHeaderStyle()} pt-14 pb-5 px-6 rounded-b-[2.5rem] shadow-sm z-10 flex-shrink-0 transition-all duration-500 relative overflow-hidden backdrop-blur-xl border-b border-white/10`}>
           
           <div className="flex justify-between items-center mb-4 relative z-10">
@@ -159,8 +160,8 @@ function MainAppContent() {
           </div>
         )}
 
-        {/* Tab View Body */}
-        <div className="flex-1 overflow-y-auto pb-32 relative z-0">
+        {/* Tab View Body (pb-32 so cards scroll above floating navbar) */}
+        <div className="flex-1 overflow-y-auto pb-32 no-scrollbar relative z-0">
           {currentTab === 'transactions' && (
             <RecordsView onOpenAdd={() => setIsAddTxOpen(true)} />
           )}
@@ -182,13 +183,15 @@ function MainAppContent() {
           )}
         </div>
 
-        {/* Floating Liquid Glass Island Navigation Bar */}
-        <FloatingLiquidNavbar 
-          currentTab={currentTab}
-          setCurrentTab={setCurrentTab}
-          onOpenAddTx={() => setIsAddTxOpen(true)}
-          hasNotifications={bills.length > 0}
-        />
+        {/* Floating Liquid Glass Island Navbar Anchor - Locked to Device Frame Center */}
+        <div className="absolute bottom-5 inset-x-0 flex justify-center z-40 pointer-events-none">
+          <FloatingLiquidNavbar 
+            currentTab={currentTab}
+            setCurrentTab={setCurrentTab}
+            onOpenAddTx={() => setIsAddTxOpen(true)}
+            hasNotifications={bills.length > 0}
+          />
+        </div>
 
         {/* Modal Sheets */}
         <AddTransactionModal isOpen={isAddTxOpen} onClose={() => setIsAddTxOpen(false)} />

@@ -19,9 +19,9 @@ export const FloatingLiquidNavbar = ({
   ];
 
   return (
-    <nav className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 px-3 py-2 rounded-full liquid-glass shadow-2xl flex items-center gap-1.5 border border-white/20 animate-spring-up pointer-events-auto">
+    <div className="pointer-events-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-full liquid-glass shadow-2xl border border-white/20 animate-spring-up">
       
-      {/* Left Tabs (Records, Analytics) */}
+      {/* Left Tabs */}
       {leftItems.map((item) => {
         const Icon = item.icon;
         const isActive = currentTab === item.id;
@@ -52,7 +52,7 @@ export const FloatingLiquidNavbar = ({
         </button>
       </div>
 
-      {/* Right Tabs (Planning, Settings) */}
+      {/* Right Tabs */}
       {rightItems.map((item) => {
         const Icon = item.icon;
         const isActive = currentTab === item.id;
@@ -75,6 +75,6 @@ export const FloatingLiquidNavbar = ({
         );
       })}
 
-    </nav>
+    </div>
   );
 };
