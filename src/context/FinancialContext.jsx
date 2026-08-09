@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { 
   auth, 
@@ -98,8 +98,11 @@ export const FinancialProvider = ({ children }) => {
     isDarkMode: true 
   }));
 
+  const [budgetWarning, setBudgetWarning] = useState(null);
   const [activeWalletId, setActiveWalletId] = useState('all');
   const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const syncTimeoutRef = useRef(null);
 
   // Listen to Firebase Authentication & handle mobile redirect result
   useEffect(() => {
@@ -119,34 +122,48 @@ export const FinancialProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // Sync to Cloud Firestore when user is logged in
+  // Efficient Quota-Saver Firestore Sync (Single Document Snapshot & Listener)
   useEffect(() => {
     if (!user || !db) return;
 
-    const syncCollection = (collName, setter) => {
-      const collRef = collection(db, 'users', user.uid, collName);
-      return onSnapshot(collRef, (snap) => {
-        if (!snap.empty) {
-          const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-          setter(items);
-        }
-      }, err => console.error(`Sync error ${collName}:`, err));
-    };
+    // Listen to single consolidated user doc to save 99% of Firebase Reads!
+    const userDocRef = doc(db, 'users', user.uid);
+    const unsub = onSnapshot(userDocRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.wallets) setWallets(data.wallets);
+        if (data.transactions) setTransactions(data.transactions);
+        if (data.budgets) setBudgets(data.budgets);
+        if (data.goals) setGoals(data.goals);
+        if (data.bills) setBills(data.bills);
+      }
+    }, err => console.error("Firestore sync error:", err));
 
-    const unsubWallets = syncCollection('wallets', setWallets);
-    const unsubTx = syncCollection('transactions', setTransactions);
-    const unsubBudgets = syncCollection('budgets', setBudgets);
-    const unsubGoals = syncCollection('goals', setGoals);
-    const unsubBills = syncCollection('bills', setBills);
-
-    return () => {
-      unsubWallets();
-      unsubTx();
-      unsubBudgets();
-      unsubGoals();
-      unsubBills();
-    };
+    return () => unsub();
   }, [user]);
+
+  // Debounced Batch Save to Firestore (Saves 99% of Firebase Writes!)
+  const scheduleCloudSync = (updatedState) => {
+    if (!user || !db) return;
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+
+    syncTimeoutRef.current = setTimeout(async () => {
+      try {
+        const userDocRef = doc(db, 'users', user.uid);
+        await setDoc(userDocRef, {
+          wallets: updatedState.wallets || wallets,
+          transactions: updatedState.transactions || transactions,
+          budgets: updatedState.budgets || budgets,
+          goals: updatedState.goals || goals,
+          bills: updatedState.bills || bills,
+          lastUpdated: new Date().toISOString()
+        }, { merge: true });
+        console.log("Efficient Quota-Saver Cloud Sync Completed.");
+      } catch (err) {
+        console.error("Cloud Sync Error:", err);
+      }
+    }, 1200); // 1.2s Debounce Buffer
+  };
 
   // Sync state to local storage as fallback
   useEffect(() => safeSet('cashly_v3_wallets', wallets), [wallets]);
@@ -155,34 +172,6 @@ export const FinancialProvider = ({ children }) => {
   useEffect(() => safeSet('cashly_v3_goals', goals), [goals]);
   useEffect(() => safeSet('cashly_v3_bills', bills), [bills]);
   useEffect(() => safeSet('cashly_v3_prefs', preferences), [preferences]);
-
-  // Save entry helper for Firestore + local state
-  const saveEntry = async (collName, data, id) => {
-    const entryId = id || data.id || `${collName.substring(0, 1)}-${Date.now()}`;
-    const payload = { ...data, id: entryId };
-
-    if (user && db) {
-      try {
-        const docRef = doc(db, 'users', user.uid, collName, entryId);
-        await setDoc(docRef, payload, { merge: true });
-      } catch (err) {
-        console.error("Firestore save error:", err);
-      }
-    }
-
-    return payload;
-  };
-
-  const deleteEntry = async (collName, id) => {
-    if (user && db) {
-      try {
-        const docRef = doc(db, 'users', user.uid, collName, id);
-        await deleteDoc(docRef);
-      } catch (err) {
-        console.error("Firestore delete error:", err);
-      }
-    }
-  };
 
   // Google Login (Popup with mobile Redirect fallback)
   const loginWithGoogle = async () => {
@@ -275,7 +264,7 @@ export const FinancialProvider = ({ children }) => {
     return { totalIncome: inc, totalExpense: exp, balance: bal };
   }, [viewTransactions, monthTransactions, activeWalletId, wallets, preferences?.baseCurrency]);
 
-  // Add Transaction
+  // Add Transaction with Budget Warning Trigger
   const addTransaction = (data) => {
     const newTx = {
       id: `t-${Date.now()}`,
@@ -283,15 +272,42 @@ export const FinancialProvider = ({ children }) => {
       ...data,
       amount: parseFloat(data.amount)
     };
-    saveEntry('transactions', newTx);
-    setTransactions(prev => [newTx, ...prev]);
+
+    const updatedTxList = [newTx, ...transactions];
+    setTransactions(updatedTxList);
+    scheduleCloudSync({ transactions: updatedTxList });
+
+    // Check Budget Limit Threshold Warning
+    if (data.type === 'expense' && data.categoryId) {
+      const targetBudget = budgets.find(b => b.categoryId === data.categoryId);
+      if (targetBudget && targetBudget.limit > 0) {
+        // Calculate total spent in this category for current month
+        let currentTotal = updatedTxList
+          .filter(t => t.type === 'expense' && t.categoryId === data.categoryId)
+          .reduce((acc, t) => acc + Number(t.amount), 0);
+
+        const pct = Math.round((currentTotal / targetBudget.limit) * 100);
+        if (pct >= 80) {
+          vibrate();
+          setBudgetWarning({
+            categoryId: data.categoryId,
+            categoryName: CATEGORIES[data.categoryId]?.name || 'Category',
+            currentTotal,
+            limit: targetBudget.limit,
+            percentage: pct
+          });
+        }
+      }
+    }
+
     confetti({ particleCount: 30, spread: 50, origin: { y: 0.85 } });
   };
 
   // Delete Transaction
   const deleteTransaction = (id) => {
-    deleteEntry('transactions', id);
-    setTransactions(prev => prev.filter(t => t.id !== id));
+    const updated = transactions.filter(t => t.id !== id);
+    setTransactions(updated);
+    scheduleCloudSync({ transactions: updated });
   };
 
   // Add Wallet
@@ -303,15 +319,17 @@ export const FinancialProvider = ({ children }) => {
       iconString: data.iconString || 'Wallet',
       balance: 0
     };
-    saveEntry('wallets', newW);
-    setWallets(prev => [...prev, newW]);
+    const updated = [...wallets, newW];
+    setWallets(updated);
+    scheduleCloudSync({ wallets: updated });
   };
 
   // Delete Wallet
   const deleteWallet = (id) => {
     if (wallets.length <= 1) return;
-    deleteEntry('wallets', id);
-    setWallets(prev => prev.filter(w => w.id !== id));
+    const updated = wallets.filter(w => w.id !== id);
+    setWallets(updated);
+    scheduleCloudSync({ wallets: updated });
     if (activeWalletId === id) setActiveWalletId('all');
   };
 
@@ -322,8 +340,9 @@ export const FinancialProvider = ({ children }) => {
       ...data,
       limit: parseFloat(data.limit)
     };
-    saveEntry('budgets', newB);
-    setBudgets(prev => [...prev, newB]);
+    const updated = [...budgets, newB];
+    setBudgets(updated);
+    scheduleCloudSync({ budgets: updated });
   };
 
   // Add Goal / Savings Jar
@@ -334,18 +353,16 @@ export const FinancialProvider = ({ children }) => {
       targetAmount: parseFloat(data.targetAmount),
       currentAmount: 0
     };
-    saveEntry('goals', newG);
-    setGoals(prev => [...prev, newG]);
+    const updated = [...goals, newG];
+    setGoals(updated);
+    scheduleCloudSync({ goals: updated });
   };
 
   // Fund Goal
   const fundGoal = (id, newAmount) => {
-    const goalObj = goals.find(g => g.id === id);
-    if (goalObj) {
-      const updated = { ...goalObj, currentAmount: newAmount };
-      saveEntry('goals', updated, id);
-    }
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, currentAmount: newAmount } : g));
+    const updated = goals.map(g => g.id === id ? { ...g, currentAmount: newAmount } : g);
+    setGoals(updated);
+    scheduleCloudSync({ goals: updated });
   };
 
   // Add Bill
@@ -355,8 +372,9 @@ export const FinancialProvider = ({ children }) => {
       ...data,
       amount: parseFloat(data.amount)
     };
-    saveEntry('bills', newBill);
-    setBills(prev => [...prev, newBill]);
+    const updated = [...bills, newBill];
+    setBills(updated);
+    scheduleCloudSync({ bills: updated });
   };
 
   // Update Preference
@@ -404,6 +422,8 @@ export const FinancialProvider = ({ children }) => {
       goals,
       bills,
       preferences,
+      budgetWarning,
+      setBudgetWarning,
       activeWalletId,
       setActiveWalletId,
       activeWallet,

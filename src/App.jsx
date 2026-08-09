@@ -14,6 +14,7 @@ import { AddGoalModal } from './components/AddGoalModal';
 import { FundGoalModal } from './components/FundGoalModal';
 import { NotificationsModal } from './components/NotificationsModal';
 import { AddBillModal } from './components/AddBillModal';
+import { BudgetWarningModal } from './components/BudgetWarningModal';
 
 import { 
   RefreshCw, Wallet, Bell, ChevronLeft, ChevronRight, TrendingUp, TrendingDown 
@@ -28,7 +29,9 @@ function MainAppContent() {
     balance, 
     totalIncome, 
     totalExpense, 
-    bills
+    bills,
+    budgetWarning,
+    setBudgetWarning
   } = useFinancials();
 
   const [currentTab, setCurrentTab] = useState('transactions'); // 'transactions' | 'analytics' | 'planning' | 'settings'
@@ -149,7 +152,7 @@ function MainAppContent() {
           </div>
         )}
 
-        {/* Tab View Body (pb-32 so cards scroll above floating navbar) */}
+        {/* Tab View Body */}
         <div className="flex-1 overflow-y-auto pb-32 no-scrollbar relative z-0">
           {currentTab === 'transactions' && (
             <RecordsView onOpenAdd={() => setIsAddTxOpen(true)} />
@@ -171,7 +174,7 @@ function MainAppContent() {
           )}
         </div>
 
-        {/* Floating Liquid Glass Island Navbar Anchor - Locked to Device Frame Center */}
+        {/* Floating Liquid Glass Island Navbar Anchor */}
         <div className="absolute bottom-5 inset-x-0 flex justify-center z-40 pointer-events-none">
           <FloatingLiquidNavbar 
             currentTab={currentTab}
@@ -181,7 +184,7 @@ function MainAppContent() {
           />
         </div>
 
-        {/* Modal Sheets */}
+        {/* Modal Sheets & Proactive Warning Popup */}
         <AddTransactionModal isOpen={isAddTxOpen} onClose={() => setIsAddTxOpen(false)} />
         <AddWalletModal isOpen={isAddWalletOpen} onClose={() => setIsAddWalletOpen(false)} />
         <AddBudgetModal isOpen={isAddBudgetOpen} onClose={() => setIsAddBudgetOpen(false)} />
@@ -189,6 +192,9 @@ function MainAppContent() {
         <FundGoalModal goal={fundingGoal} onClose={() => setFundingGoal(null)} />
         <NotificationsModal isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} onAddBill={() => setIsAddBillOpen(true)} />
         <AddBillModal isOpen={isAddBillOpen} onClose={() => setIsAddBillOpen(false)} />
+        
+        {/* Proactive Budget Warning Popup */}
+        <BudgetWarningModal warning={budgetWarning} onClose={() => setBudgetWarning(null)} />
 
       </div>
     </div>
