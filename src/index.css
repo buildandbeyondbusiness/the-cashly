@@ -6,7 +6,7 @@ html, body {
   overscroll-behavior: none;
   background-color: #000000;
   color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Plus Jakarta Sans", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Plus Jakarta Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -24,12 +24,41 @@ html, body {
 }
 
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 24px);
+  padding-bottom: env(safe-area-inset-bottom, 20px);
 }
 
-.glass-bottom-bar {
-  background: rgba(28, 28, 30, 0.85);
+/* Apple Liquid Glass Effect */
+.liquid-glass {
+  background: rgba(28, 28, 30, 0.65);
+  backdrop-filter: blur(25px) saturate(190%);
+  -webkit-backdrop-filter: blur(25px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.liquid-glass-pill {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.liquid-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Liquid Wave Animation for Savings Jars */
+@keyframes wave {
+  0% { transform: translateX(-50%) rotate(0deg); }
+  50% { transform: translateX(0%) rotate(180deg); }
+  100% { transform: translateX(-50%) rotate(360deg); }
+}
+
+.animate-wave {
+  animation: wave 8s linear infinite;
 }
