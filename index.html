@@ -1,19 +1,40 @@
 <!doctype html>
-<html lang="en" class="light">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/jpeg" href="./logo.jpg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Cashly 2.0 - Clean & Smart Money Management</title>
-    <meta name="description" content="A beautiful, privacy-first frontend money management web app with multi-wallet tracking, transaction editing, overviews, and fast iOS Backtap entry." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- PWA & Apple Web App Meta -->
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Cashly" />
+    <link rel="apple-touch-icon" href="./logo.jpg" />
+    <meta name="theme-color" content="#10b981" />
+
+    <title>Cashly 2.0 - Personal Finance</title>
+    <meta name="description" content="A beautiful, privacy-first iOS-native money management PWA." />
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="./assets/index-BQW8KB3M.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CzaDhuBR.css">
+    <script type="module" crossorigin src="./assets/index-ZxxINODf.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-qSSVzylR.css">
   </head>
-  <body class="bg-[#f4f5fa] dark:bg-[#0e0826] text-slate-800 dark:text-slate-100 antialiased min-h-screen selection:bg-purple-500 selection:text-white transition-colors duration-300">
+  <body class="bg-black text-white antialiased min-h-screen selection:bg-emerald-500 selection:text-white transition-colors duration-300">
     <div id="root"></div>
+
+    <!-- Register Service Worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('ServiceWorker registered:', reg))
+            .catch(err => console.log('ServiceWorker error:', err));
+        });
+      }
+    </script>
   </body>
 </html>
