@@ -1,26 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useFinancials } from '../context/FinancialContext';
-import { 
-  Zap, 
-  Download, 
-  Upload, 
-  RotateCcw, 
-  Wallet, 
-  Sparkles,
-  TrendingUp,
-  SlidersHorizontal
-} from 'lucide-react';
+import { Plus, Download, Upload, Trash2, MoreVertical, Zap } from 'lucide-react';
 
-export const Navbar = ({ onOpenQuickShortcut, onOpenAddTransaction, onOpenAddWallet }) => {
-  const { 
-    activeTimeframe, 
-    setActiveTimeframe, 
-    exportData, 
-    importData, 
-    resetToDefault,
-    totalBalance 
-  } = useFinancials();
-
+export const Navbar = ({ onOpenAddTransaction, onOpenQuickShortcut, onOpenAddWallet }) => {
+  const { exportData, importData, clearAllData } = useFinancials();
+  const [showMenu, setShowMenu] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -40,117 +24,114 @@ export const Navbar = ({ onOpenQuickShortcut, onOpenAddTransaction, onOpenAddWal
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 dark:bg-[#0e0826]/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-purple-900/30 px-4 lg:px-8 py-3.5 transition-colors">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-30 bg-white/90 dark:bg-[#0e0826]/90 backdrop-blur-md border-b border-slate-100 dark:border-purple-900/30 px-4 sm:px-8 py-3.5 transition-colors">
+      <div className="max-w-4xl mx-auto flex items-center justify-between">
         
         {/* Brand Logo & Name */}
         <div className="flex items-center gap-3">
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur opacity-40 group-hover:opacity-75 transition duration-300"></div>
-            <img 
-              src="./logo.jpg" 
-              alt="Cashly Logo" 
-              className="relative w-10 h-10 rounded-2xl object-cover shadow-md border border-purple-400/30"
-            />
-          </div>
+          <img 
+            src="./logo.jpg" 
+            alt="Cashly Logo" 
+            className="w-9 h-9 rounded-2xl object-cover shadow-sm border border-purple-500/20"
+          />
           <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-500 dark:from-purple-300 dark:via-indigo-200 dark:to-white bg-clip-text text-transparent">
-                Cashly
-              </h1>
-              <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 border border-purple-300 dark:border-purple-700/50">
-                2.0
-              </span>
-            </div>
-            <p className="text-xs font-medium text-slate-500 dark:text-purple-300/70 hidden sm:block">
-              Clean Money Management
-            </p>
+            <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none">
+              Cashly
+            </h1>
+            <span className="text-[11px] font-medium text-slate-400 dark:text-purple-300/60">
+              Personal Ledger
+            </span>
           </div>
         </div>
 
-        {/* Timeframe Filter Tabs (Week, Month, Year) - Matched to Reference Image 1 */}
-        <div className="bg-slate-100 dark:bg-[#1b123d] p-1 rounded-2xl border border-slate-200 dark:border-purple-900/40 flex items-center gap-1 shadow-inner">
-          {['week', 'month', 'year'].map((tf) => (
-            <button
-              key={tf}
-              onClick={() => setActiveTimeframe(tf)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all duration-200 ${
-                activeTimeframe === tf
-                  ? 'bg-white dark:bg-purple-600 text-purple-700 dark:text-white shadow-sm scale-[1.02]'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              {tf}
-            </button>
-          ))}
-        </div>
-
-        {/* Action Controls & Quick Backtap Mode Button */}
+        {/* Action Controls */}
         <div className="flex items-center gap-2">
           
-          {/* iOS Backtap / Quick Entry Button */}
+          {/* iOS Quick Keypad Shortcut */}
           <button
             onClick={onOpenQuickShortcut}
-            title="iOS Backtap Quick Shortcut"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-purple-glow transition-all active:scale-95"
+            title="Quick Keypad Entry"
+            className="p-2 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-500 dark:text-amber-300 transition-colors"
           >
-            <Zap className="w-4 h-4 fill-amber-300 text-amber-300 animate-pulse" />
-            <span className="hidden md:inline">Quick Tap</span>
+            <Zap className="w-4 h-4 fill-current" />
           </button>
 
-          {/* Add Wallet Button */}
+          {/* Primary Quick Log (+) Button */}
           <button
-            onClick={onOpenAddWallet}
-            className="p-2 rounded-xl text-slate-600 dark:text-purple-200 hover:bg-slate-100 dark:hover:bg-purple-950/60 border border-slate-200 dark:border-purple-800/40 transition-colors"
-            title="Add Wallet"
+            onClick={onOpenAddTransaction}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs shadow-purple-glow transition-all active:scale-95"
           >
-            <Wallet className="w-4 h-4" />
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Add Log</span>
           </button>
 
-          {/* Backup & Data Actions */}
-          <div className="hidden lg:flex items-center gap-1 border-l border-slate-200 dark:border-purple-900/50 pl-2">
+          {/* More Options Dropdown */}
+          <div className="relative">
             <button
-              onClick={exportData}
-              title="Export JSON Backup"
-              className="p-2 rounded-xl text-slate-600 dark:text-purple-200 hover:bg-slate-100 dark:hover:bg-purple-950/60 transition-colors"
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-purple-900/40 transition-colors"
             >
-              <Download className="w-4 h-4" />
+              <MoreVertical className="w-4 h-4" />
             </button>
 
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              title="Import JSON Backup"
-              className="p-2 rounded-xl text-slate-600 dark:text-purple-200 hover:bg-slate-100 dark:hover:bg-purple-950/60 transition-colors"
-            >
-              <Upload className="w-4 h-4" />
-            </button>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileChange} 
-              accept=".json" 
-              className="hidden" 
-            />
+            {showMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1b103e] rounded-2xl p-1.5 shadow-2xl border border-slate-100 dark:border-purple-800/40 text-xs font-medium space-y-0.5 z-50">
+                <button
+                  onClick={() => {
+                    onOpenAddWallet();
+                    setShowMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 dark:text-purple-200 hover:bg-slate-100 dark:hover:bg-purple-900/40 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add New Wallet
+                </button>
 
-            <button
-              onClick={resetToDefault}
-              title="Reset Sample Data"
-              className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
+                <button
+                  onClick={() => {
+                    exportData();
+                    setShowMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 dark:text-purple-200 hover:bg-slate-100 dark:hover:bg-purple-900/40 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Export Data JSON
+                </button>
+
+                <button
+                  onClick={() => {
+                    fileInputRef.current?.click();
+                    setShowMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 dark:text-purple-200 hover:bg-slate-100 dark:hover:bg-purple-900/40 transition-colors"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  Import Data JSON
+                </button>
+
+                <div className="my-1 border-t border-slate-100 dark:border-purple-900/40"></div>
+
+                <button
+                  onClick={() => {
+                    clearAllData();
+                    setShowMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Start Clean / Reset
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* User Profile Avatar Pill */}
-          <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-purple-900/50">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 p-0.5 shadow-sm">
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
-                alt="Profile"
-                className="w-full h-full rounded-full object-cover"
-              />
-            </div>
-          </div>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            accept=".json" 
+            className="hidden" 
+          />
 
         </div>
 
