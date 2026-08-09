@@ -16,12 +16,12 @@ import {
 } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDOwnNc4ZOlcomQkyvc2wRcfk1NICBkhQs",
-  authDomain: "cashlyapp-25956.firebaseapp.com",
-  projectId: "cashlyapp-25956",
-  storageBucket: "cashlyapp-25956.firebasestorage.app",
-  messagingSenderId: "591724211566",
-  appId: "1:591724211566:web:cec1db7bfaf452cc5d257f"
+  apiKey: "AIzaSyDOdaclQWTACcL3A2RRmzJBPbShMY9ozmw",
+  authDomain: "cashly-personal.firebaseapp.com",
+  projectId: "cashly-personal",
+  storageBucket: "cashly-personal.firebasestorage.app",
+  messagingSenderId: "326691281601",
+  appId: "1:326691281601:web:4eb26737550aac7ac7d240"
 };
 
 let app = null;
@@ -30,12 +30,10 @@ let db = null;
 let googleProvider = null;
 
 try {
-  if (firebaseConfig && firebaseConfig.apiKey) {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-    googleProvider = new GoogleAuthProvider();
-  }
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  googleProvider = new GoogleAuthProvider();
 } catch (e) {
   console.warn("Firebase safely bypassed due to init exception:", e);
 }
