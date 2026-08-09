@@ -21,6 +21,7 @@ const FinancialContext = createContext(null);
 export const EX_RATES = { USD: 1, EUR: 1.08, GBP: 1.25, JPY: 0.0066, INR: 0.012 };
 
 export const CATEGORIES = {
+  // Expenses
   food: { id: 'food', name: 'Food & Drink', bg: 'bg-orange-500', color: '#f97316', type: 'expense' },
   transport: { id: 'transport', name: 'Transport', bg: 'bg-blue-500', color: '#3b82f6', type: 'expense' },
   shopping: { id: 'shopping', name: 'Shopping', bg: 'bg-purple-500', color: '#a855f7', type: 'expense' },
@@ -31,9 +32,16 @@ export const CATEGORIES = {
   education: { id: 'education', name: 'Education', bg: 'bg-cyan-500', color: '#06b6d4', type: 'expense' },
   subscriptions: { id: 'subscriptions', name: 'Subscriptions', bg: 'bg-violet-500', color: '#8b5cf6', type: 'expense' },
   utilities: { id: 'utilities', name: 'Utilities', bg: 'bg-yellow-500', color: '#eab308', type: 'expense' },
+  
+  // Income Sources
   salary: { id: 'salary', name: 'Salary', bg: 'bg-emerald-500', color: '#10b981', type: 'income' },
-  gifts: { id: 'gifts', name: 'Gifts', bg: 'bg-teal-500', color: '#14b8a6', type: 'income' },
-  investment: { id: 'investment', name: 'Investment', bg: 'bg-emerald-600', color: '#059669', type: 'income' },
+  freelance: { id: 'freelance', name: 'Freelance', bg: 'bg-teal-500', color: '#14b8a6', type: 'income' },
+  business: { id: 'business', name: 'Business', bg: 'bg-indigo-600', color: '#4f46e5', type: 'income' },
+  investment: { id: 'investment', name: 'Investments', bg: 'bg-emerald-600', color: '#059669', type: 'income' },
+  crypto: { id: 'crypto', name: 'Crypto & Forex', bg: 'bg-amber-500', color: '#f59e0b', type: 'income' },
+  rental: { id: 'rental', name: 'Rental Income', bg: 'bg-sky-500', color: '#0ea5e9', type: 'income' },
+  gifts: { id: 'gifts', name: 'Gifts & Bonus', bg: 'bg-pink-500', color: '#ec4899', type: 'income' },
+  other_income: { id: 'other_income', name: 'Other Income', bg: 'bg-gray-600', color: '#4b5563', type: 'income' },
 };
 
 const DEFAULT_WALLETS = [
@@ -332,7 +340,7 @@ export const FinancialProvider = ({ children }) => {
 
   // Fund Goal
   const fundGoal = (id, newAmount) => {
-    const goalObj = goals.find(g => g.id === g.id);
+    const goalObj = goals.find(g => g.id === id);
     if (goalObj) {
       const updated = { ...goalObj, currentAmount: newAmount };
       saveEntry('goals', updated, id);

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useFinancials, CATEGORIES, vibrate } from '../context/FinancialContext';
 import { 
   X, Coffee, Car, ShoppingBag, Film, FileText, Home, Heart, Book, 
-  Repeat, Zap, DollarSign, Landmark, ArrowRightLeft, Wallet 
+  Repeat, Zap, DollarSign, Landmark, ArrowRightLeft, Wallet, Briefcase, 
+  Building2, TrendingUp, Coins, Gift 
 } from 'lucide-react';
 
 const ICON_MAP = {
@@ -17,8 +18,13 @@ const ICON_MAP = {
   subscriptions: Repeat,
   utilities: Zap,
   salary: DollarSign,
-  gifts: DollarSign,
-  investment: Landmark
+  freelance: Briefcase,
+  business: Building2,
+  investment: TrendingUp,
+  crypto: Coins,
+  rental: Home,
+  gifts: Gift,
+  other_income: DollarSign
 };
 
 export const AddTransactionModal = ({ isOpen, onClose }) => {
@@ -92,19 +98,19 @@ export const AddTransactionModal = ({ isOpen, onClose }) => {
               }`}
             />
             <button 
-              onClick={() => { vibrate(); setType('expense'); }} 
+              onClick={() => { vibrate(); setType('expense'); setSelectedCategory(null); }} 
               className={`flex-1 py-2 text-xs font-bold z-10 transition-colors ${type === 'expense' ? 'text-white' : 'text-gray-400'}`}
             >
               Expense
             </button>
             <button 
-              onClick={() => { vibrate(); setType('income'); }} 
+              onClick={() => { vibrate(); setType('income'); setSelectedCategory(null); }} 
               className={`flex-1 py-2 text-xs font-bold z-10 transition-colors ${type === 'income' ? 'text-white' : 'text-gray-400'}`}
             >
               Income
             </button>
             <button 
-              onClick={() => { vibrate(); setType('transfer'); }} 
+              onClick={() => { vibrate(); setType('transfer'); setSelectedCategory(null); }} 
               className={`flex-1 py-2 text-xs font-bold z-10 transition-colors ${type === 'transfer' ? 'text-white' : 'text-gray-400'}`}
             >
               Transfer
@@ -112,7 +118,7 @@ export const AddTransactionModal = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Scrollable Form Body (NO autoFocus on input!) */}
+        {/* Scrollable Form Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4 no-scrollbar">
           
           {/* Amount Display Input */}
@@ -189,7 +195,7 @@ export const AddTransactionModal = ({ isOpen, onClose }) => {
           {type !== 'transfer' && (
             <div className="bg-[#2C2C2E]/60 p-3.5 rounded-2xl border border-gray-800">
               <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 block">
-                Category
+                {type === 'income' ? 'Income Source Category' : 'Expense Category'}
               </label>
               <div className="grid grid-cols-4 gap-y-4 gap-x-2">
                 {Object.values(CATEGORIES).filter(c => c.type === type).map((cat) => {
@@ -230,7 +236,7 @@ export const AddTransactionModal = ({ isOpen, onClose }) => {
             />
           </div>
 
-          {/* Save Button inside Scroll Container */}
+          {/* Save Button */}
           <div className="pt-2 pb-6">
             <button 
               onClick={handleSave} 
