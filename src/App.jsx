@@ -6,6 +6,7 @@ import { PlanningView } from './components/PlanningView';
 import { SettingsView } from './components/SettingsView';
 import { FloatingLiquidNavbar } from './components/FloatingLiquidNavbar';
 import { DynamicIsland } from './components/DynamicIsland';
+import { WalletCarousel } from './components/WalletCarousel';
 
 import { AddTransactionModal } from './components/AddTransactionModal';
 import { AddWalletModal } from './components/AddWalletModal';
@@ -17,16 +18,14 @@ import { AddBillModal } from './components/AddBillModal';
 import { BudgetWarningModal } from './components/BudgetWarningModal';
 
 import { 
-  RefreshCw, Wallet, Bell, ChevronLeft, ChevronRight, TrendingUp, TrendingDown 
+  Bell, ChevronLeft, ChevronRight, TrendingUp, TrendingDown 
 } from 'lucide-react';
 
 function MainAppContent() {
   const { 
     activeWallet, 
-    cycleWallet, 
     currentMonth, 
     setCurrentMonth, 
-    balance, 
     totalIncome, 
     totalExpense, 
     bills,
@@ -45,12 +44,6 @@ function MainAppContent() {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isAddBillOpen, setIsAddBillOpen] = useState(false);
 
-  const getHeaderStyle = () => {
-    if (currentTab === 'settings') return 'bg-[#000000] text-white';
-    if (currentTab === 'planning') return 'bg-gradient-to-br from-indigo-900/90 via-purple-950/90 to-black text-white';
-    return 'bg-gradient-to-br from-emerald-900/90 via-teal-950/90 to-black text-white';
-  };
-
   return (
     <div className="fixed inset-0 bg-black flex items-center justify-center font-sans overflow-hidden p-0 sm:p-4 touch-none">
       {/* Perfectly Centered & Locked Device Frame Container */}
@@ -60,21 +53,13 @@ function MainAppContent() {
         <DynamicIsland onOpenQuickLog={() => setIsAddTxOpen(true)} />
 
         {/* Top Hero Header Banner */}
-        <div className={`${getHeaderStyle()} pt-14 pb-5 px-6 rounded-b-[2.5rem] shadow-sm z-10 flex-shrink-0 transition-all duration-500 relative overflow-hidden backdrop-blur-xl border-b border-white/10`}>
+        <div className="bg-[#000000] pt-14 pb-3 rounded-b-[2.5rem] shadow-sm z-10 flex-shrink-0 transition-all duration-500 relative overflow-hidden backdrop-blur-xl border-b border-white/10">
           
-          <div className="flex justify-between items-center mb-4 relative z-10">
-            {/* Cycle Wallet Button */}
-            <div 
-              onClick={currentTab !== 'settings' ? cycleWallet : undefined}
-              className={`flex items-center gap-2 py-1.5 px-3.5 rounded-full transition-all ${
-                currentTab !== 'settings' ? 'bg-white/15 hover:bg-white/25 cursor-pointer backdrop-blur-md active:scale-95 border border-white/10' : 'bg-transparent'
-              }`}
-            >
-              {currentTab !== 'settings' ? <RefreshCw className="w-3.5 h-3.5 text-emerald-300" /> : <Wallet className="w-3.5 h-3.5 text-gray-400" />}
-              <span className="font-semibold text-xs tracking-wide truncate max-w-[130px]">
-                {currentTab === 'settings' ? 'Settings' : activeWallet.name}
-              </span>
-            </div>
+          {/* Top Bar with Brand & Notification Bell */}
+          <div className="flex justify-between items-center px-6 mb-1 relative z-10">
+            <span className="font-extrabold text-sm tracking-wide text-white">
+              {currentTab === 'settings' ? 'Settings' : 'Cashly'}
+            </span>
 
             {/* Notification Bell */}
             {currentTab !== 'settings' && (
@@ -90,40 +75,33 @@ function MainAppContent() {
             )}
           </div>
 
-          {/* Total Balance Readout */}
+          {/* Swipeable Apple Wallet Carousel (Net Worth + Individual Wallets) */}
           {currentTab !== 'settings' && (
-            <div className="text-center mb-2 relative z-10 animate-fade-in">
-              <p className="opacity-75 text-[11px] font-semibold uppercase tracking-widest mb-0.5">
-                {currentTab === 'planning' ? 'Planning Net Worth' : 'Total Balance'}
-              </p>
-              <h1 className="text-4xl font-extrabold tracking-tight font-sans tabular-nums">
-                {formatCurrency(balance, activeWallet.currency)}
-              </h1>
-            </div>
+            <WalletCarousel onAddWallet={() => setIsAddWalletOpen(true)} />
           )}
 
           {/* Income & Expenses Sub-Header Pill */}
           {currentTab === 'transactions' && (
-            <div className="flex justify-between items-center bg-white/10 rounded-2xl p-3.5 mt-4 backdrop-blur-md border border-white/10 animate-fade-in">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shadow-inner">
-                  <TrendingDown className="w-4 h-4" />
+            <div className="flex justify-between items-center bg-[#1C1C1E]/80 rounded-2xl p-3 mx-6 mt-2 backdrop-blur-md border border-white/10 animate-fade-in">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shadow-inner">
+                  <TrendingDown className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <p className="text-white/70 text-[10px] font-semibold uppercase">Income</p>
-                  <p className="font-bold text-sm text-emerald-400 tabular-nums">{formatCurrency(totalIncome, activeWallet.currency)}</p>
+                  <p className="text-white/70 text-[9px] font-semibold uppercase">Income</p>
+                  <p className="font-bold text-xs text-emerald-400 tabular-nums">{formatCurrency(totalIncome, activeWallet.currency)}</p>
                 </div>
               </div>
 
-              <div className="w-px h-6 bg-white/20" />
+              <div className="w-px h-5 bg-white/20" />
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <div className="text-right">
-                  <p className="text-white/70 text-[10px] font-semibold uppercase">Expenses</p>
-                  <p className="font-bold text-sm text-white tabular-nums">{formatCurrency(totalExpense, activeWallet.currency)}</p>
+                  <p className="text-white/70 text-[9px] font-semibold uppercase">Expenses</p>
+                  <p className="font-bold text-xs text-white tabular-nums">{formatCurrency(totalExpense, activeWallet.currency)}</p>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shadow-inner">
-                  <TrendingUp className="w-4 h-4" />
+                <div className="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shadow-inner">
+                  <TrendingUp className="w-3.5 h-3.5" />
                 </div>
               </div>
             </div>
@@ -133,7 +111,7 @@ function MainAppContent() {
 
         {/* Month Selector Bar */}
         {currentTab !== 'settings' && (
-          <div className="flex items-center justify-between px-6 py-3 bg-black border-b border-gray-800/60 flex-shrink-0 z-0 text-xs">
+          <div className="flex items-center justify-between px-6 py-2.5 bg-black border-b border-gray-800/60 flex-shrink-0 z-0 text-xs">
             <button 
               onClick={() => { vibrate(); setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)); }} 
               className="p-1 hover:bg-gray-800 rounded-full transition-colors active:scale-90"
