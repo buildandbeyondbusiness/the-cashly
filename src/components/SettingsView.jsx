@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useFinancials, vibrate } from '../context/FinancialContext';
+import { useFinancials, WALLET_COLORS, vibrate } from '../context/FinancialContext';
 import { 
   User, Wallet, Plus, Trash2, Globe, Home, Bell, Download, 
   HelpCircle, Info, ChevronRight, LogOut, Cloud, AlertTriangle, ShieldAlert 
@@ -120,27 +120,33 @@ export const SettingsView = ({ onAddWallet }) => {
       {/* My Accounts */}
       <SectionTitle>My Accounts</SectionTitle>
       <div className="bg-[#1C1C1E] rounded-3xl shadow-sm border border-gray-800/60 overflow-hidden divide-y divide-gray-800/40">
-        {wallets.map((w) => (
-          <div key={w.id} className="flex items-center justify-between p-4 hover:bg-gray-800/40 transition-colors group">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-gray-800 flex items-center justify-center text-gray-300 group-hover:scale-105 transition-transform">
-                <Wallet className="w-5 h-5" />
+        {wallets.map((w) => {
+          const theme = WALLET_COLORS[w.color || 'emerald'] || WALLET_COLORS.emerald;
+          return (
+            <div key={w.id} className="flex items-center justify-between p-4 hover:bg-gray-800/40 transition-colors group">
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-2xl ${theme.glow} ${theme.text} flex items-center justify-center border ${theme.border} group-hover:scale-105 transition-transform`}>
+                  <Wallet className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-white text-[15px]">{w.name}</p>
+                    <span className={`w-2 h-2 rounded-full ${theme.bg}`} />
+                  </div>
+                  <p className="text-xs text-gray-400 font-medium">{w.currency} Account</p>
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-white text-[15px]">{w.name}</p>
-                <p className="text-xs text-gray-400 font-medium">{w.currency}</p>
-              </div>
+              {wallets.length > 1 && (
+                <button 
+                  onClick={() => { vibrate('medium'); setWalletToDelete(w.id); }} 
+                  className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-full transition-colors active:scale-90"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              )}
             </div>
-            {wallets.length > 1 && (
-              <button 
-                onClick={() => { vibrate('medium'); setWalletToDelete(w.id); }} 
-                className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-full transition-colors active:scale-90"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-            )}
-          </div>
-        ))}
+          );
+        })}
 
         <div 
           onClick={onAddWallet} 
@@ -294,7 +300,7 @@ export const SettingsView = ({ onAddWallet }) => {
               <div className="text-center py-4 space-y-2">
                 <img src="./logo.jpg" alt="Logo" className="w-14 h-14 rounded-2xl mx-auto border border-emerald-500/30" />
                 <p className="font-extrabold text-base">Cashly 2.0</p>
-                <p className="text-xs text-gray-400">Version 3.5.0 (Per-Account Sync & Danger Zone)<br/><span className="text-emerald-400 font-bold mt-1 block">Your wealth, simplified.</span></p>
+                <p className="text-xs text-gray-400">Version 3.6.0 (Custom Wallet Colors & Themes)<br/><span className="text-emerald-400 font-bold mt-1 block">Your wealth, simplified.</span></p>
               </div>
             )}
           </div>

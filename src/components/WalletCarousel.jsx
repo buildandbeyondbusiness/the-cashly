@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { useFinancials, EX_RATES, formatCurrency, vibrate } from '../context/FinancialContext';
+import { useFinancials, EX_RATES, WALLET_COLORS, formatCurrency, vibrate } from '../context/FinancialContext';
 import { Wallet, Layers } from 'lucide-react';
 
 export const WalletCarousel = ({ onAddWallet }) => {
@@ -17,7 +17,7 @@ export const WalletCarousel = ({ onAddWallet }) => {
 
   // All cards: Net Worth + Individual Wallets
   const allCards = [
-    { id: 'all', name: 'Net Worth', currency: preferences?.baseCurrency || 'USD', isNetWorth: true },
+    { id: 'all', name: 'Net Worth', currency: preferences?.baseCurrency || 'USD', color: 'emerald', isNetWorth: true },
     ...wallets
   ];
 
@@ -106,6 +106,7 @@ export const WalletCarousel = ({ onAddWallet }) => {
         {allCards.map((card) => {
           const isActive = activeWalletId === card.id;
           const cardBal = getCardBalance(card);
+          const theme = WALLET_COLORS[card.color || 'emerald'] || WALLET_COLORS.emerald;
 
           return (
             <div
@@ -113,20 +114,20 @@ export const WalletCarousel = ({ onAddWallet }) => {
               onClick={() => handleSelectCard(card.id)}
               className={`snap-center flex-shrink-0 w-[82%] sm:w-[300px] p-5 rounded-[2rem] cursor-pointer transition-all duration-300 relative overflow-hidden border ${
                 isActive
-                  ? 'bg-gradient-to-br from-emerald-900/95 via-teal-950/95 to-black border-emerald-500/60 shadow-[0_10px_25px_rgba(16,185,129,0.35)] ring-1 ring-emerald-500/30'
+                  ? `bg-gradient-to-br ${theme.gradient} ${theme.border} shadow-[0_10px_25px_rgba(0,0,0,0.5)] ring-1 ${theme.ring}`
                   : 'bg-[#1C1C1E]/80 hover:bg-[#1C1C1E] border-white/10 shadow-lg opacity-85'
               }`}
             >
-              {/* Background Glow Accent */}
+              {/* Dynamic Theme Background Glow Accent */}
               {isActive && (
-                <div className="absolute -top-10 -right-10 w-28 h-28 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none" />
+                <div className={`absolute -top-10 -right-10 w-28 h-28 ${theme.glow} rounded-full blur-2xl pointer-events-none`} />
               )}
 
               {/* Card Header */}
               <div className="flex justify-between items-center mb-3 relative z-10">
                 <div className="flex items-center gap-2.5">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-inner ${
-                    card.isNetWorth ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-white'
+                    card.isNetWorth ? 'bg-emerald-500/20 text-emerald-400' : `${theme.glow} ${theme.text}`
                   }`}>
                     {card.isNetWorth ? <Layers className="w-4 h-4" /> : <Wallet className="w-4 h-4" />}
                   </div>
@@ -136,7 +137,7 @@ export const WalletCarousel = ({ onAddWallet }) => {
                 </div>
 
                 <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
-                  isActive ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-white/10 text-gray-400 border-white/10'
+                  isActive ? `${theme.glow} ${theme.text} ${theme.border}` : 'bg-white/10 text-gray-400 border-white/10'
                 }`}>
                   {card.currency}
                 </span>
@@ -157,17 +158,19 @@ export const WalletCarousel = ({ onAddWallet }) => {
         })}
       </div>
 
-      {/* Pagination Dots */}
+      {/* Pagination Dots with Dynamic Color Themes */}
       <div className="flex justify-center items-center gap-1.5 pt-2">
         {allCards.map((card) => {
           const isActive = activeWalletId === card.id;
+          const theme = WALLET_COLORS[card.color || 'emerald'] || WALLET_COLORS.emerald;
+
           return (
             <button
               key={card.id}
               onClick={() => handleSelectCard(card.id)}
               className={`transition-all duration-300 rounded-full ${
                 isActive 
-                  ? 'w-5 h-1.5 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' 
+                  ? `w-5 h-1.5 ${theme.bg} shadow-[0_0_8px_rgba(255,255,255,0.4)]` 
                   : 'w-1.5 h-1.5 bg-gray-700 hover:bg-gray-500'
               }`}
             />

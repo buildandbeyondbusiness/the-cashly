@@ -20,6 +20,16 @@ const FinancialContext = createContext(null);
 
 export const EX_RATES = { USD: 1, EUR: 1.08, GBP: 1.25, JPY: 0.0066, INR: 0.012 };
 
+export const WALLET_COLORS = {
+  emerald: { id: 'emerald', name: 'Emerald', bg: 'bg-emerald-500', gradient: 'from-emerald-900/95 via-teal-950/95 to-black', border: 'border-emerald-500/60', text: 'text-emerald-400', glow: 'bg-emerald-500/20', ring: 'ring-emerald-500/30' },
+  indigo: { id: 'indigo', name: 'Indigo', bg: 'bg-indigo-500', gradient: 'from-indigo-900/95 via-purple-950/95 to-black', border: 'border-indigo-500/60', text: 'text-indigo-400', glow: 'bg-indigo-500/20', ring: 'ring-indigo-500/30' },
+  purple: { id: 'purple', name: 'Purple', bg: 'bg-purple-500', gradient: 'from-purple-900/95 via-fuchsia-950/95 to-black', border: 'border-purple-500/60', text: 'text-purple-400', glow: 'bg-purple-500/20', ring: 'ring-purple-500/30' },
+  amber: { id: 'amber', name: 'Amber', bg: 'bg-amber-500', gradient: 'from-amber-900/95 via-orange-950/95 to-black', border: 'border-amber-500/60', text: 'text-amber-400', glow: 'bg-amber-500/20', ring: 'ring-amber-500/30' },
+  rose: { id: 'rose', name: 'Rose', bg: 'bg-rose-500', gradient: 'from-rose-900/95 via-pink-950/95 to-black', border: 'border-rose-500/60', text: 'text-rose-400', glow: 'bg-rose-500/20', ring: 'ring-rose-500/30' },
+  sky: { id: 'sky', name: 'Sky Blue', bg: 'bg-sky-500', gradient: 'from-sky-900/95 via-blue-950/95 to-black', border: 'border-sky-500/60', text: 'text-sky-400', glow: 'bg-sky-500/20', ring: 'ring-sky-500/30' },
+  teal: { id: 'teal', name: 'Teal', bg: 'bg-teal-500', gradient: 'from-teal-900/95 via-emerald-950/95 to-black', border: 'border-teal-500/60', text: 'text-teal-400', glow: 'bg-teal-500/20', ring: 'ring-teal-500/30' },
+};
+
 export const CATEGORIES = {
   // Expenses
   food: { id: 'food', name: 'Food & Drink', bg: 'bg-orange-500', color: '#f97316', type: 'expense' },
@@ -45,8 +55,8 @@ export const CATEGORIES = {
 };
 
 const DEFAULT_WALLETS = [
-  { id: 'w1', name: 'Main Wallet', currency: 'USD', balance: 0, iconString: 'Wallet' },
-  { id: 'w2', name: 'Savings Vault', currency: 'USD', balance: 0, iconString: 'Landmark' },
+  { id: 'w1', name: 'Main Wallet', currency: 'USD', balance: 0, color: 'emerald', iconString: 'Wallet' },
+  { id: 'w2', name: 'Savings Vault', currency: 'USD', balance: 0, color: 'indigo', iconString: 'Landmark' },
 ];
 
 const safeGet = (key, fallback) => {
@@ -134,7 +144,6 @@ export const FinancialProvider = ({ children }) => {
     if (!db) return;
 
     if (!user) {
-      // If user logs out, reset state to local defaults
       setWallets(safeGet('cashly_v3_wallets', DEFAULT_WALLETS));
       setTransactions(safeGet('cashly_v3_transactions', []));
       setBudgets(safeGet('cashly_v3_budgets', []));
@@ -143,7 +152,6 @@ export const FinancialProvider = ({ children }) => {
       return;
     }
 
-    // Reset state before populating new user's cloud data to prevent data bleeding
     setWallets(DEFAULT_WALLETS);
     setTransactions([]);
     setBudgets([]);
@@ -165,7 +173,7 @@ export const FinancialProvider = ({ children }) => {
     return () => unsub();
   }, [user]);
 
-  // Debounced Batch Save to Firestore (Saves 99% of Firebase Writes!)
+  // Debounced Batch Save to Firestore
   const scheduleCloudSync = (updatedState) => {
     if (!user || !db) return;
     if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
@@ -184,7 +192,7 @@ export const FinancialProvider = ({ children }) => {
       } catch (err) {
         console.error("Cloud Sync Error:", err);
       }
-    }, 1200); // 1.2s Debounce Buffer
+    }, 1200);
   };
 
   // Sync state to local storage as fallback
@@ -225,15 +233,12 @@ export const FinancialProvider = ({ children }) => {
   // Wipe All Data (Danger Zone Action)
   const wipeAllData = async () => {
     vibrate('warning');
-    
-    // Clear local storage
     localStorage.removeItem('cashly_v3_wallets');
     localStorage.removeItem('cashly_v3_transactions');
     localStorage.removeItem('cashly_v3_budgets');
     localStorage.removeItem('cashly_v3_goals');
     localStorage.removeItem('cashly_v3_bills');
 
-    // Wipe Firestore User Document if logged in
     if (user && db) {
       try {
         const userDocRef = doc(db, 'users', user.uid);
@@ -243,7 +248,6 @@ export const FinancialProvider = ({ children }) => {
       }
     }
 
-    // Reset local state to blank defaults
     setWallets(DEFAULT_WALLETS);
     setTransactions([]);
     setBudgets([]);
@@ -255,8 +259,8 @@ export const FinancialProvider = ({ children }) => {
   };
 
   const activeWallet = activeWalletId === 'all'
-    ? { id: 'all', name: 'All Wallets', currency: preferences?.baseCurrency || 'USD' }
-    : wallets.find(w => w.id === activeWalletId) || wallets[0] || { name: 'Main Wallet', currency: 'USD' };
+    ? { id: 'all', name: 'All Wallets', currency: preferences?.baseCurrency || 'USD', color: 'emerald' }
+    : wallets.find(w => w.id === activeWalletId) || wallets[0] || { name: 'Main Wallet', currency: 'USD', color: 'emerald' };
 
   const cycleWallet = () => {
     vibrate('light');
@@ -373,6 +377,7 @@ export const FinancialProvider = ({ children }) => {
       id: `w-${Date.now()}`,
       name: data.name,
       currency: data.currency || 'USD',
+      color: data.color || 'emerald',
       iconString: data.iconString || 'Wallet',
       balance: 0
     };
