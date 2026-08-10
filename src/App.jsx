@@ -44,6 +44,8 @@ function MainAppContent() {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isAddBillOpen, setIsAddBillOpen] = useState(false);
 
+  const isAnyModalOpen = isAddTxOpen || isAddWalletOpen || isAddBudgetOpen || isAddGoalOpen || fundingGoal || isNotifOpen || isAddBillOpen || budgetWarning;
+
   return (
     <div className="fixed inset-0 bg-black flex items-center justify-center font-sans overflow-hidden p-0 sm:p-4 touch-none">
       {/* Perfectly Centered & Locked Device Frame Container */}
@@ -152,8 +154,10 @@ function MainAppContent() {
           )}
         </div>
 
-        {/* Floating Liquid Glass Island Navbar Anchor */}
-        <div className="absolute bottom-5 inset-x-0 flex justify-center z-40 pointer-events-none">
+        {/* Floating Liquid Glass Island Navbar Anchor - Fades & hides when modal opens */}
+        <div className={`absolute bottom-5 inset-x-0 flex justify-center z-40 pointer-events-none transition-all duration-300 ${
+          isAnyModalOpen ? 'opacity-0 translate-y-10 scale-90' : 'opacity-100 translate-y-0 scale-100'
+        }`}>
           <FloatingLiquidNavbar 
             currentTab={currentTab}
             setCurrentTab={setCurrentTab}

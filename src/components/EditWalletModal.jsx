@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFinancials, WALLET_COLORS, vibrate } from '../context/FinancialContext';
 
 export const EditWalletModal = ({ wallet, onClose }) => {
-  const { addWallet, wallets, scheduleCloudSync, setWallets } = useFinancials();
+  const { wallets, setWallets } = useFinancials();
   
   const [name, setName] = useState('');
   const [currency, setCurrency] = useState('USD');
@@ -22,7 +22,6 @@ export const EditWalletModal = ({ wallet, onClose }) => {
     vibrate('success');
     if (!name.trim()) return;
 
-    // Update wallet in context
     const updated = wallets.map(w => w.id === wallet.id ? { 
       ...w, 
       name: name.trim(), 
@@ -35,9 +34,9 @@ export const EditWalletModal = ({ wallet, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={onClose} />
-      <div className="bg-[#1C1C1E] w-full rounded-t-[2.5rem] p-6 pb-safe pointer-events-auto animate-spring-up border-t border-gray-800 text-white space-y-4">
+    <div className="fixed inset-0 z-[100] flex flex-col justify-end pointer-events-none">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-md pointer-events-auto transition-opacity" onClick={onClose} />
+      <div className="bg-[#1C1C1E] w-full rounded-t-[2.5rem] p-6 pb-12 pointer-events-auto animate-spring-up border-t border-gray-800 text-white space-y-4 relative z-[101] shadow-2xl">
         <div className="flex justify-between items-center pb-2 border-b border-gray-800">
           <h2 className="text-lg font-bold">Edit Account</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-white font-bold text-sm">✕</button>
@@ -76,13 +75,13 @@ export const EditWalletModal = ({ wallet, onClose }) => {
           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
             Edit Card Color Theme
           </label>
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 overflow-x-auto py-1 no-scrollbar">
             {Object.entries(WALLET_COLORS).map(([colorKey, colorObj]) => (
               <button
                 key={colorKey}
                 type="button"
                 onClick={() => { vibrate('light'); setSelectedColor(colorKey); }}
-                className={`w-9 h-9 rounded-full ${colorObj.bg} transition-all duration-300 transform flex items-center justify-center ${
+                className={`w-9 h-9 flex-shrink-0 rounded-full ${colorObj.bg} transition-all duration-300 transform flex items-center justify-center ${
                   selectedColor === colorKey ? 'scale-110 ring-4 ring-white/40 shadow-lg' : 'opacity-70 hover:opacity-100'
                 }`}
                 title={colorObj.name}
