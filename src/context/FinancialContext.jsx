@@ -386,6 +386,14 @@ export const FinancialProvider = ({ children }) => {
     scheduleCloudSync({ wallets: updated });
   };
 
+  // Update Wallet
+  const updateWallet = (id, data) => {
+    vibrate('success');
+    const updated = wallets.map(w => w.id === id ? { ...w, ...data } : w);
+    setWallets(updated);
+    scheduleCloudSync({ wallets: updated });
+  };
+
   // Delete Wallet
   const deleteWallet = (id) => {
     if (wallets.length <= 1) return;
@@ -506,6 +514,7 @@ export const FinancialProvider = ({ children }) => {
       addTransaction,
       deleteTransaction,
       addWallet,
+      updateWallet,
       deleteWallet,
       addBudget,
       addGoal,

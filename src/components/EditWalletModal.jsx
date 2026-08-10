@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFinancials, WALLET_COLORS, vibrate } from '../context/FinancialContext';
 
 export const EditWalletModal = ({ wallet, onClose }) => {
-  const { wallets, setWallets } = useFinancials();
+  const { updateWallet } = useFinancials();
   
   const [name, setName] = useState('');
   const [currency, setCurrency] = useState('USD');
@@ -22,14 +22,12 @@ export const EditWalletModal = ({ wallet, onClose }) => {
     vibrate('success');
     if (!name.trim()) return;
 
-    const updated = wallets.map(w => w.id === wallet.id ? { 
-      ...w, 
+    updateWallet(wallet.id, { 
       name: name.trim(), 
       currency, 
       color: selectedColor 
-    } : w);
+    });
 
-    setWallets(updated);
     onClose();
   };
 
@@ -97,7 +95,7 @@ export const EditWalletModal = ({ wallet, onClose }) => {
         <button 
           onClick={handleSave} 
           disabled={!name.trim()} 
-          className="w-full py-3.5 rounded-2xl font-bold text-white bg-emerald-500 hover:bg-emerald-400 active:scale-98 transition-all disabled:opacity-50 text-sm shadow-lg shadow-emerald-500/20"
+          className="w-full py-3.5 rounded-2xl font-bold text-white bg-emerald-500 hover:bg-emerald-400 active:scale-98 transition-all disabled:opacity-50 text-sm shadow-lg shadow-emerald-500/20 cursor-pointer"
         >
           Save Account Changes
         </button>
