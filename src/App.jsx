@@ -10,6 +10,7 @@ import { WalletCarousel } from './components/WalletCarousel';
 
 import { AddTransactionModal } from './components/AddTransactionModal';
 import { AddWalletModal } from './components/AddWalletModal';
+import { EditWalletModal } from './components/EditWalletModal';
 import { AddBudgetModal } from './components/AddBudgetModal';
 import { AddGoalModal } from './components/AddGoalModal';
 import { FundGoalModal } from './components/FundGoalModal';
@@ -38,13 +39,14 @@ function MainAppContent() {
   // Modals
   const [isAddTxOpen, setIsAddTxOpen] = useState(false);
   const [isAddWalletOpen, setIsAddWalletOpen] = useState(false);
+  const [editingWallet, setEditingWallet] = useState(null);
   const [isAddBudgetOpen, setIsAddBudgetOpen] = useState(false);
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
   const [fundingGoal, setFundingGoal] = useState(null);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isAddBillOpen, setIsAddBillOpen] = useState(false);
 
-  const isAnyModalOpen = isAddTxOpen || isAddWalletOpen || isAddBudgetOpen || isAddGoalOpen || fundingGoal || isNotifOpen || isAddBillOpen || budgetWarning;
+  const isAnyModalOpen = isAddTxOpen || isAddWalletOpen || !!editingWallet || isAddBudgetOpen || isAddGoalOpen || !!fundingGoal || isNotifOpen || isAddBillOpen || !!budgetWarning;
 
   return (
     <div className="fixed inset-0 bg-black flex items-center justify-center font-sans overflow-hidden p-0 sm:p-4 touch-none">
@@ -150,25 +152,27 @@ function MainAppContent() {
           {currentTab === 'settings' && (
             <SettingsView 
               onAddWallet={() => { vibrate(); setIsAddWalletOpen(true); }}
+              onEditWallet={(w) => { vibrate(); setEditingWallet(w); }}
             />
           )}
         </div>
 
-        {/* Floating Liquid Glass Island Navbar Anchor - Fades & hides when modal opens */}
-        <div className={`absolute bottom-5 inset-x-0 flex justify-center z-40 pointer-events-none transition-all duration-300 ${
-          isAnyModalOpen ? 'opacity-0 translate-y-10 scale-90' : 'opacity-100 translate-y-0 scale-100'
-        }`}>
-          <FloatingLiquidNavbar 
-            currentTab={currentTab}
-            setCurrentTab={setCurrentTab}
-            onOpenAddTx={() => setIsAddTxOpen(true)}
-            hasNotifications={bills.length > 0}
-          />
-        </div>
+        {/* Floating Liquid Glass Island Navbar Anchor - Completely Hides & Disables Pointer Events when ANY modal is open */}
+        {!isAnyModalOpen && (
+          <div className="absolute bottom-5 inset-x-0 flex justify-center z-40 pointer-events-none transition-all duration-300 animate-fade-in">
+            <FloatingLiquidNavbar 
+              currentTab={currentTab}
+              setCurrentTab={setCurrentTab}
+              onOpenAddTx={() => setIsAddTxOpen(true)}
+              hasNotifications={bills.length > 0}
+            />
+          </div>
+        )}
 
-        {/* Modal Sheets & Proactive Warning Popup */}
+        {/* Top-Level Modal Sheets & Proactive Warning Popup */}
         <AddTransactionModal isOpen={isAddTxOpen} onClose={() => setIsAddTxOpen(false)} />
         <AddWalletModal isOpen={isAddWalletOpen} onClose={() => setIsAddWalletOpen(false)} />
+        <EditWalletModal wallet={editingWallet} onClose={() => setEditingWallet(null)} />
         <AddBudgetModal isOpen={isAddBudgetOpen} onClose={() => setIsAddBudgetOpen(false)} />
         <AddGoalModal isOpen={isAddGoalOpen} onClose={() => setIsAddGoalOpen(false)} />
         <FundGoalModal goal={fundingGoal} onClose={() => setFundingGoal(null)} />

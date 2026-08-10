@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useFinancials, WALLET_COLORS, vibrate } from '../context/FinancialContext';
-import { EditWalletModal } from './EditWalletModal';
 import { 
   User, Wallet, Plus, Trash2, Globe, Home, Bell, Download, 
   HelpCircle, Info, ChevronRight, LogOut, Cloud, AlertTriangle, ShieldAlert, Edit3 
 } from 'lucide-react';
 
-export const SettingsView = ({ onAddWallet }) => {
+export const SettingsView = ({ onAddWallet, onEditWallet }) => {
   const { 
     user,
     loginWithGoogle,
@@ -21,7 +20,6 @@ export const SettingsView = ({ onAddWallet }) => {
 
   const [activeModal, setActiveModal] = useState(null);
   const [walletToDelete, setWalletToDelete] = useState(null);
-  const [editingWallet, setEditingWallet] = useState(null);
   const [showWipeConfirm, setShowWipeConfirm] = useState(false);
 
   const SectionTitle = ({ children, danger }) => (
@@ -127,7 +125,7 @@ export const SettingsView = ({ onAddWallet }) => {
           return (
             <div 
               key={w.id} 
-              onClick={() => { vibrate('medium'); setEditingWallet(w); }}
+              onClick={() => { vibrate('medium'); onEditWallet(w); }}
               className="flex items-center justify-between p-4 hover:bg-gray-800/40 cursor-pointer transition-colors group"
             >
               <div className="flex items-center gap-4">
@@ -145,7 +143,7 @@ export const SettingsView = ({ onAddWallet }) => {
 
               <div className="flex items-center gap-2">
                 <button 
-                  onClick={(e) => { e.stopPropagation(); vibrate('light'); setEditingWallet(w); }}
+                  onClick={(e) => { e.stopPropagation(); vibrate('light'); onEditWallet(w); }}
                   className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors active:scale-90"
                   title="Edit Wallet Color & Details"
                 >
@@ -218,9 +216,6 @@ export const SettingsView = ({ onAddWallet }) => {
           onClick={() => setShowWipeConfirm(true)} 
         />
       </div>
-
-      {/* Edit Wallet Modal */}
-      <EditWalletModal wallet={editingWallet} onClose={() => setEditingWallet(null)} />
 
       {/* Delete Wallet Dialog */}
       {walletToDelete && (
@@ -320,7 +315,7 @@ export const SettingsView = ({ onAddWallet }) => {
               <div className="text-center py-4 space-y-2">
                 <img src="./logo.jpg" alt="Logo" className="w-14 h-14 rounded-2xl mx-auto border border-emerald-500/30" />
                 <p className="font-extrabold text-base">Cashly 2.0</p>
-                <p className="text-xs text-gray-400">Version 3.7.0 (Edit Wallet Colors & IntersectionObserver Sync)<br/><span className="text-emerald-400 font-bold mt-1 block">Your wealth, simplified.</span></p>
+                <p className="text-xs text-gray-400">Version 3.8.0 (Zero Navbar Overlap Edition)<br/><span className="text-emerald-400 font-bold mt-1 block">Your wealth, simplified.</span></p>
               </div>
             )}
           </div>
