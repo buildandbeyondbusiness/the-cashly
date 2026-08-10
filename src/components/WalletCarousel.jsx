@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useFinancials, EX_RATES, formatCurrency, vibrate } from '../context/FinancialContext';
-import { Wallet, Landmark, CreditCard, Layers, Plus } from 'lucide-react';
+import { Wallet, Layers } from 'lucide-react';
 
 export const WalletCarousel = ({ onAddWallet }) => {
   const { 
@@ -12,6 +12,8 @@ export const WalletCarousel = ({ onAddWallet }) => {
   } = useFinancials();
 
   const scrollRef = useRef(null);
+  const isProgrammaticScroll = useRef(false);
+  const scrollTimeoutRef = useRef(null);
 
   // All cards: Net Worth + Individual Wallets
   const allCards = [
@@ -49,33 +51,59 @@ export const WalletCarousel = ({ onAddWallet }) => {
     return bal;
   };
 
+  // Auto-Select Active Wallet when user swipes
+  const handleScroll = () => {
+    if (isProgrammaticScroll.current) return;
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+
+    scrollTimeoutRef.current = setTimeout(() => {
+      if (!scrollRef.current) return;
+      const container = scrollRef.current;
+      const cardWidth = container.offsetWidth * 0.82;
+      const scrollPos = container.scrollLeft;
+      const targetIndex = Math.round(scrollPos / cardWidth);
+
+      if (allCards[targetIndex] && allCards[targetIndex].id !== activeWalletId) {
+        vibrate('light');
+        setActiveWalletId(allCards[targetIndex].id);
+      }
+    }, 80);
+  };
+
   const handleSelectCard = (id) => {
     vibrate('light');
     setActiveWalletId(id);
   };
 
-  // Scroll to active card when activeWalletId changes
+  // Scroll to active card when activeWalletId changes programmatically
   useEffect(() => {
     if (!scrollRef.current) return;
     const activeIdx = allCards.findIndex(c => c.id === activeWalletId);
     if (activeIdx !== -1) {
       const container = scrollRef.current;
       const cardWidth = container.offsetWidth * 0.82;
+      
+      isProgrammaticScroll.current = true;
       container.scrollTo({
         left: activeIdx * cardWidth,
         behavior: 'smooth'
       });
+
+      setTimeout(() => {
+        isProgrammaticScroll.current = false;
+      }, 350);
     }
   }, [activeWalletId]);
 
   return (
-    <div className="w-full relative py-2">
+    <div className="w-full relative py-2 overflow-hidden">
       {/* Horizontal Swipeable Card Carousel */}
       <div 
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar px-6 py-1 scroll-smooth touch-pan-x"
+        onScroll={handleScroll}
+        className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar px-6 py-2 scroll-smooth touch-pan-x"
       >
-        {allCards.map((card, idx) => {
+        {allCards.map((card) => {
           const isActive = activeWalletId === card.id;
           const cardBal = getCardBalance(card);
 
@@ -83,9 +111,9 @@ export const WalletCarousel = ({ onAddWallet }) => {
             <div
               key={card.id}
               onClick={() => handleSelectCard(card.id)}
-              className={`snap-center flex-shrink-0 w-[82%] sm:w-[310px] p-5 rounded-[2.2rem] cursor-pointer transition-all duration-300 transform active:scale-95 relative overflow-hidden border ${
+              className={`snap-center flex-shrink-0 w-[82%] sm:w-[300px] p-5 rounded-[2rem] cursor-pointer transition-all duration-300 relative overflow-hidden border ${
                 isActive
-                  ? 'bg-gradient-to-br from-emerald-900/90 via-teal-950/90 to-black border-emerald-500/50 shadow-[0_12px_30px_rgba(16,185,129,0.3)] scale-[1.02]'
+                  ? 'bg-gradient-to-br from-emerald-900/95 via-teal-950/95 to-black border-emerald-500/60 shadow-[0_10px_25px_rgba(16,185,129,0.35)] ring-1 ring-emerald-500/30'
                   : 'bg-[#1C1C1E]/80 hover:bg-[#1C1C1E] border-white/10 shadow-lg opacity-85'
               }`}
             >
