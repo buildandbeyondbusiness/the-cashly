@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useFinancials, WALLET_COLORS, vibrate } from '../context/FinancialContext';
+import { EditWalletModal } from './EditWalletModal';
 import { 
   User, Wallet, Plus, Trash2, Globe, Home, Bell, Download, 
-  HelpCircle, Info, ChevronRight, LogOut, Cloud, AlertTriangle, ShieldAlert 
+  HelpCircle, Info, ChevronRight, LogOut, Cloud, AlertTriangle, ShieldAlert, Edit3 
 } from 'lucide-react';
 
 export const SettingsView = ({ onAddWallet }) => {
@@ -20,6 +21,7 @@ export const SettingsView = ({ onAddWallet }) => {
 
   const [activeModal, setActiveModal] = useState(null);
   const [walletToDelete, setWalletToDelete] = useState(null);
+  const [editingWallet, setEditingWallet] = useState(null);
   const [showWipeConfirm, setShowWipeConfirm] = useState(false);
 
   const SectionTitle = ({ children, danger }) => (
@@ -123,7 +125,11 @@ export const SettingsView = ({ onAddWallet }) => {
         {wallets.map((w) => {
           const theme = WALLET_COLORS[w.color || 'emerald'] || WALLET_COLORS.emerald;
           return (
-            <div key={w.id} className="flex items-center justify-between p-4 hover:bg-gray-800/40 transition-colors group">
+            <div 
+              key={w.id} 
+              onClick={() => { vibrate('medium'); setEditingWallet(w); }}
+              className="flex items-center justify-between p-4 hover:bg-gray-800/40 cursor-pointer transition-colors group"
+            >
               <div className="flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-2xl ${theme.glow} ${theme.text} flex items-center justify-center border ${theme.border} group-hover:scale-105 transition-transform`}>
                   <Wallet className="w-5 h-5" />
@@ -133,17 +139,28 @@ export const SettingsView = ({ onAddWallet }) => {
                     <p className="font-bold text-white text-[15px]">{w.name}</p>
                     <span className={`w-2 h-2 rounded-full ${theme.bg}`} />
                   </div>
-                  <p className="text-xs text-gray-400 font-medium">{w.currency} Account</p>
+                  <p className="text-xs text-gray-400 font-medium">{w.currency} Account • Tap to Edit Color</p>
                 </div>
               </div>
-              {wallets.length > 1 && (
+
+              <div className="flex items-center gap-2">
                 <button 
-                  onClick={() => { vibrate('medium'); setWalletToDelete(w.id); }} 
-                  className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-full transition-colors active:scale-90"
+                  onClick={(e) => { e.stopPropagation(); vibrate('light'); setEditingWallet(w); }}
+                  className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors active:scale-90"
+                  title="Edit Wallet Color & Details"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Edit3 className="w-4 h-4" />
                 </button>
-              )}
+                {wallets.length > 1 && (
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); vibrate('medium'); setWalletToDelete(w.id); }} 
+                    className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-full transition-colors active:scale-90"
+                    title="Delete Account"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
@@ -201,6 +218,9 @@ export const SettingsView = ({ onAddWallet }) => {
           onClick={() => setShowWipeConfirm(true)} 
         />
       </div>
+
+      {/* Edit Wallet Modal */}
+      <EditWalletModal wallet={editingWallet} onClose={() => setEditingWallet(null)} />
 
       {/* Delete Wallet Dialog */}
       {walletToDelete && (
@@ -300,7 +320,7 @@ export const SettingsView = ({ onAddWallet }) => {
               <div className="text-center py-4 space-y-2">
                 <img src="./logo.jpg" alt="Logo" className="w-14 h-14 rounded-2xl mx-auto border border-emerald-500/30" />
                 <p className="font-extrabold text-base">Cashly 2.0</p>
-                <p className="text-xs text-gray-400">Version 3.6.0 (Custom Wallet Colors & Themes)<br/><span className="text-emerald-400 font-bold mt-1 block">Your wealth, simplified.</span></p>
+                <p className="text-xs text-gray-400">Version 3.7.0 (Edit Wallet Colors & IntersectionObserver Sync)<br/><span className="text-emerald-400 font-bold mt-1 block">Your wealth, simplified.</span></p>
               </div>
             )}
           </div>

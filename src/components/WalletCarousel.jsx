@@ -12,8 +12,8 @@ export const WalletCarousel = ({ onAddWallet }) => {
   } = useFinancials();
 
   const scrollRef = useRef(null);
+  const cardRefs = useRef({});
   const isProgrammaticScroll = useRef(false);
-  const scrollTimeoutRef = useRef(null);
 
   // All cards: Net Worth + Individual Wallets
   const allCards = [
@@ -51,47 +51,61 @@ export const WalletCarousel = ({ onAddWallet }) => {
     return bal;
   };
 
-  // Auto-Select Active Wallet when user swipes
-  const handleScroll = () => {
-    if (isProgrammaticScroll.current) return;
-    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+  // IntersectionObserver for 100% Rock-Solid Swipe Detection (including last card)
+  useEffect(() => {
+    if (!scrollRef.current) return;
 
-    scrollTimeoutRef.current = setTimeout(() => {
-      if (!scrollRef.current) return;
-      const container = scrollRef.current;
-      const cardWidth = container.offsetWidth * 0.82;
-      const scrollPos = container.scrollLeft;
-      const targetIndex = Math.round(scrollPos / cardWidth);
+    const observerOptions = {
+      root: scrollRef.current,
+      threshold: 0.65 // Card must be 65% in view to trigger selection
+    };
 
-      if (allCards[targetIndex] && allCards[targetIndex].id !== activeWalletId) {
-        vibrate('light');
-        setActiveWalletId(allCards[targetIndex].id);
-      }
-    }, 80);
-  };
+    const observer = new IntersectionObserver((entries) => {
+      if (isProgrammaticScroll.current) return;
+
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const cardId = entry.target.getAttribute('data-card-id');
+          if (cardId && cardId !== activeWalletId) {
+            vibrate('light');
+            setActiveWalletId(cardId);
+          }
+        }
+      });
+    }, observerOptions);
+
+    Object.values(cardRefs.current).forEach((el) => {
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [allCards.length, activeWalletId]);
 
   const handleSelectCard = (id) => {
     vibrate('light');
     setActiveWalletId(id);
   };
 
-  // Scroll to active card when activeWalletId changes programmatically
+  // Programmatic scroll to active card when activeWalletId changes
   useEffect(() => {
     if (!scrollRef.current) return;
     const activeIdx = allCards.findIndex(c => c.id === activeWalletId);
     if (activeIdx !== -1) {
       const container = scrollRef.current;
-      const cardWidth = container.offsetWidth * 0.82;
-      
-      isProgrammaticScroll.current = true;
-      container.scrollTo({
-        left: activeIdx * cardWidth,
-        behavior: 'smooth'
-      });
+      const cardEl = cardRefs.current[activeWalletId];
 
-      setTimeout(() => {
-        isProgrammaticScroll.current = false;
-      }, 350);
+      if (cardEl) {
+        isProgrammaticScroll.current = true;
+        cardEl.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+
+        setTimeout(() => {
+          isProgrammaticScroll.current = false;
+        }, 400);
+      }
     }
   }, [activeWalletId]);
 
@@ -100,7 +114,6 @@ export const WalletCarousel = ({ onAddWallet }) => {
       {/* Horizontal Swipeable Card Carousel */}
       <div 
         ref={scrollRef}
-        onScroll={handleScroll}
         className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar px-6 py-2 scroll-smooth touch-pan-x"
       >
         {allCards.map((card) => {
@@ -111,6 +124,8 @@ export const WalletCarousel = ({ onAddWallet }) => {
           return (
             <div
               key={card.id}
+              data-card-id={card.id}
+              ref={(el) => (cardRefs.current[card.id] = el)}
               onClick={() => handleSelectCard(card.id)}
               className={`snap-center flex-shrink-0 w-[82%] sm:w-[300px] p-5 rounded-[2rem] cursor-pointer transition-all duration-300 relative overflow-hidden border ${
                 isActive
