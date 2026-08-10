@@ -313,9 +313,11 @@ export const SettingsView = ({ onAddWallet, onEditWallet }) => {
 
             {activeModal === 'About' && (
               <div className="text-center py-4 space-y-2">
-                <img src="./logo.jpg" alt="Logo" className="w-14 h-14 rounded-2xl mx-auto border border-emerald-500/30" />
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30 font-black text-xl shadow-inner">
+                  C
+                </div>
                 <p className="font-extrabold text-base">Cashly 2.0</p>
-                <p className="text-xs text-gray-400">Version 3.8.0 (Zero Navbar Overlap Edition)<br/><span className="text-emerald-400 font-bold mt-1 block">Your wealth, simplified.</span></p>
+                <p className="text-xs text-gray-400">Version 4.0.0 (Clean Minimal Edition)<br/><span className="text-emerald-400 font-bold mt-1 block">Your wealth, simplified.</span></p>
               </div>
             )}
           </div>
